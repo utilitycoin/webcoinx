@@ -1,6 +1,16 @@
-define(["jquery", "../exitnode"], function ($) {
+define([
+  "jquery",
+  "../walletmanager",
+  "../exitnode",
+  "./txview",
+  "../bindings",
+
+  "../wallets/miniwallet"
+], function ($, WalletManager, ExitNode, TransactionView, setCommonBindings) {
 
 $(function () {
+  $('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css') );
+
   var html = new EJS({url: 'views/layout.ejs'}).render();
   $("body").html(html);
 
@@ -28,6 +38,7 @@ $(function () {
 	$('#addr').focus(function (e) {
 		this.select();
 	}).mouseup(function (e) {
+		this.select();
 		e.preventDefault();
 	});
 
@@ -61,7 +72,7 @@ $(function () {
 
 	var cfg = new Settings();
 	var wallet = new Bitcoin.Wallet();
-	var walletMan = new WalletManager(wallet);
+	var wm = new WalletManager(wallet);
 	var txDb = new TransactionDatabase(); // Tx chain
 	var txMem = new TransactionDatabase(); // Memory pool
 	var txView = new TransactionView($('#main_tx_list'));
@@ -73,6 +84,7 @@ $(function () {
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
 
+  setCommonBindings(cfg, wm, txDb, txMem, txView, exitNode);
 
 	$(exitNode).bind('connectStatus', function (e) {
 		console.log('connect', e);
@@ -84,34 +96,34 @@ $(function () {
 		  updateBalance();
   });
 
-	$(walletMan).bind('walletProgress', function (e) {
+	$(wm).bind('walletProgress', function (e) {
 		$("#wallet_init_status").text("Creating wallet "+e.n+"/"+e.total);
 	});
 
-	$(walletMan).bind('walletInit', function (e) {
+	$(wm).bind('walletInit', function (e) {
 		$("#wallet_init_status").text("");
 		$('#wallet_active').show();
 		$('#wallet_init').hide();
 
-		var addr = wallet.getCurAddress().toString();
+		var addr = e.newWallet.wallet.getCurAddress().toString();
 		$('#addr').val(addr);
 		addrClip.setText(addr);
 		addrClip.reposition();
 	});
 
-	$(walletMan).bind('walletDeinit', function (e) {
+	$(wm).bind('walletDeinit', function (e) {
 		$("#wallet_init_status").text("");
 		$('#wallet_active').hide();
 		$('#wallet_init').show();
 	});
 
 	// Load wallet if there is one
-	walletMan.init();
+	wm.init();
 
 	// Interface buttons
 	$('#wallet_init_create').click(function (e) {
 		e.preventDefault();
-		walletMan.createWallet();
+		wm.createWallet();
 	});
 	$('#wallet_active_recreate').click(function (e) {
 		e.preventDefault();

@@ -3,7 +3,7 @@ define(
   function (require) {
     if (Ext.is.Tablet && 0) {
       require(["./tablet/index"]);
-    } else if (Ext.is.Phone || 1) {
+    } else if (Ext.is.Phone) {
       require(["./phone/index"]);
     } else {
       require(["./desktop/index"]);
