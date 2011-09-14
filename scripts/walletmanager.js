@@ -18,43 +18,54 @@ define(function () {
     console.log(Persist.type);
 
     var walletsList = this.dataStore.get('data', function (ok, data) {
-      data = JSON.parse(data);
-      if (data && data.wallets) {
-        var wallets = data.wallets;
-        var walletsObjs = self.deserialize(wallets);
+      try {
+        data = JSON.parse(data);
+        if (data && data.wallets) {
+          var wallets = data.wallets;
+          var walletsObjs = self.deserialize(wallets);
 
-        for (var i = 0, l = walletsObjs.length; i < l; i++) {
-          console.log(walletsObjs);
-          self.addWallet(walletsObjs[i]);
-        }
-
-        if ("number" === typeof data.active &&
-            data.active <= self.wallets.length &&
-            data.active >= 0) {
-          self.setActiveWallet(data.active);
-	      } else if (self.wallets.length) {
-          self.setActiveWallet(0);
-	      }
-
-        try {
-          // Migrate (very) old wallet data
-          if (localStorage.wallet) {
-            self.createWallet({
-              type: 'mini',
-              name: "Restored Wallet",
-              keys: localStorage.wallet
-            });
+          for (var i = 0, l = walletsObjs.length; i < l; i++) {
+            console.log(walletsObjs);
+            self.addWallet(walletsObjs[i]);
           }
-        } catch (e) {}
 
-        if (!self.wallets.length) {
-          // No wallet found
-          var deinitEvent = jQuery.Event('walletDeinit');
-          deinitEvent.oldWallet = null;
-          deinitEvent.newWallet = null;
-          deinitEvent.manager = self;
-          $(self).trigger(deinitEvent);
+          if ("number" === typeof data.active &&
+              data.active <= self.wallets.length &&
+              data.active >= 0) {
+            self.setActiveWallet(data.active);
+	        } else if (self.wallets.length) {
+            self.setActiveWallet(0);
+	        }
+
+          try {
+            // Migrate (very) old wallet data
+            if (localStorage.wallet) {
+              self.createWallet({
+                type: 'mini',
+                name: "Restored Wallet",
+                keys: localStorage.wallet
+              });
+            }
+          } catch (e) {}
         }
+      } catch (err) {
+        // Log the error, but continue
+        // TODO: In the future we may want to try and backup the corrupt
+        //       wallet data in this case. However it is hard to do that
+        //       correctly, because quietly storing data that the user may
+        //       think is gone can be problematic also. So it would need to
+        //       show up in the UI as a "CorruptedWallet" wallet type for
+        //       example.
+        console.error(err);
+      }
+
+      if (!self.wallets.length) {
+        // No wallet found
+        var deinitEvent = jQuery.Event('walletDeinit');
+        deinitEvent.oldWallet = null;
+        deinitEvent.newWallet = null;
+        deinitEvent.manager = self;
+        $(self).trigger(deinitEvent);
       }
 
       $(self).trigger('walletListUpdate');
