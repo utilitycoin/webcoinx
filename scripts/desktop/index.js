@@ -123,12 +123,18 @@ $(function () {
 	// Interface buttons
 	$('#wallet_init_create').click(function (e) {
 		e.preventDefault();
-		wm.createWallet();
+		wm.createWallet({
+            'type': 'mini',
+            'name': 'testing'
+        });
 	});
 	$('#wallet_active_recreate').click(function (e) {
 		e.preventDefault();
 		if (prompt("WARNING: This action will make the application forget your current wallet. Unless you have the wallet backed up, this is final and means your balance will be lost forever!\n\nIF YOU ARE SURE, TYPE \"YES\".") === "YES") {
-			walletMan.createWallet();
+            wm.createWallet({
+                'type': 'mini',
+                'name': 'testing'
+            });
 		}
 	});
 
@@ -142,7 +148,7 @@ $(function () {
 
 	function updateBalance() {
 		$('#wallet_active .balance .value').text(Bitcoin.Util.formatValue(wallet.getBalance()));
-	};
+	}
 
 	// Send Money Dialog
 	var sendDialog = $('#dialog_send_money').dialog({
@@ -177,7 +183,7 @@ $(function () {
 		function validateError(msg) {
 			var msgObj = Message.create(msg, "error");
 			msgObj.appendTo(msgHub);
-		};
+		}
 
 		// Safe conversion from double to BigInteger
 		var valueString = ""+$.fn.autoNumeric.Strip("dialog_send_money_amount");
