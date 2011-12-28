@@ -71,8 +71,8 @@ $(function () {
 	};
 
 	var cfg = new Settings();
-	var wallet = new Bitcoin.Wallet();
-	var wm = new WalletManager(wallet);
+	var wallet;
+	var wm = new WalletManager();
 	var txDb = new TransactionDatabase(); // Tx chain
 	var txMem = new TransactionDatabase(); // Memory pool
 	var txView = new TransactionView($('#main_tx_list'));
@@ -104,7 +104,7 @@ $(function () {
 		$("#wallet_init_status").text("");
 		$('#wallet_active').show();
 		$('#wallet_init').hide();
-
+        wallet= e.newWallet.wallet;
 		var addr = e.newWallet.wallet.getCurAddress().toString();
 		$('#addr').val(addr);
 		addrClip.setText(addr);
