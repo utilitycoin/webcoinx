@@ -71,8 +71,8 @@ $(function () {
 	};
 
 	var cfg = new Settings();
-	var wallet = new Bitcoin.Wallet();
-	var wm = new WalletManager(wallet);
+	var wallet;
+	var wm = new WalletManager();
 	var txDb = new TransactionDatabase(); // Tx chain
 	var txMem = new TransactionDatabase(); // Memory pool
 	var txView = new TransactionView($('#main_tx_list'));
@@ -104,7 +104,7 @@ $(function () {
 		$("#wallet_init_status").text("");
 		$('#wallet_active').show();
 		$('#wallet_init').hide();
-
+        wallet= e.newWallet.wallet;
 		var addr = e.newWallet.wallet.getCurAddress().toString();
 		$('#addr').val(addr);
 		addrClip.setText(addr);
@@ -123,12 +123,18 @@ $(function () {
 	// Interface buttons
 	$('#wallet_init_create').click(function (e) {
 		e.preventDefault();
-		wm.createWallet();
+		wm.createWallet({
+            'type': 'mini',
+            'name': 'testing'
+        });
 	});
 	$('#wallet_active_recreate').click(function (e) {
 		e.preventDefault();
 		if (prompt("WARNING: This action will make the application forget your current wallet. Unless you have the wallet backed up, this is final and means your balance will be lost forever!\n\nIF YOU ARE SURE, TYPE \"YES\".") === "YES") {
-			walletMan.createWallet();
+            wm.createWallet({
+                'type': 'mini',
+                'name': 'testing'
+            });
 		}
 	});
 
@@ -142,7 +148,7 @@ $(function () {
 
 	function updateBalance() {
 		$('#wallet_active .balance .value').text(Bitcoin.Util.formatValue(wallet.getBalance()));
-	};
+	}
 
 	// Send Money Dialog
 	var sendDialog = $('#dialog_send_money').dialog({
@@ -177,7 +183,7 @@ $(function () {
 		function validateError(msg) {
 			var msgObj = Message.create(msg, "error");
 			msgObj.appendTo(msgHub);
-		};
+		}
 
 		// Safe conversion from double to BigInteger
 		var valueString = ""+$.fn.autoNumeric.Strip("dialog_send_money_amount");

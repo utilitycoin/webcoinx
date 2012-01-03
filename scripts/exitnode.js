@@ -25,8 +25,8 @@ define(function () {
 
 	  this.socket = io.connect(this.uri);
 	  this.socket.on('connect', $.proxy(this.handleConnect, this));
-	  this.socket.on('error', function () {
-		  console.log('error, test');
+	  this.socket.on('error', function (error) {
+		  console.log('socketio error:\n\t ' + error);
 	  });
 	  this.socket.on('message', $.proxy(this.handleMessage, this));
 	  this.socket.on('disconnect', $.proxy(this.handleDisconnect, this));
