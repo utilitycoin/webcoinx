@@ -84,6 +84,8 @@ $(function () {
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
 
+  $('#exitnode_status').text(exitNodeHost);
+
   setCommonBindings(cfg, wm, txDb, txMem, txView, exitNode);
 
 	$(exitNode).bind('connectStatus', function (e) {
