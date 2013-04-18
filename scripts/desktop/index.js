@@ -4,9 +4,10 @@ define([
   "../exitnode",
   "./txview",
   "../bindings",
-
+  "../colorman",
+  
   "../wallets/miniwallet"
-], function ($, WalletManager, ExitNode, TransactionView, setCommonBindings) {
+], function ($, WalletManager, ExitNode, TransactionView, setCommonBindings, ColorMan) {
 
 $(function () {
   $('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css') );
@@ -73,6 +74,7 @@ $(function () {
 	var cfg = new Settings();
 	var wallet;
 	var wm = new WalletManager();
+        var colorMan = new ColorMan();
 	var txDb = new TransactionDatabase(); // Tx chain
 	var txMem = new TransactionDatabase(); // Memory pool
 	var txView = new TransactionView($('#main_tx_list'));
@@ -151,6 +153,13 @@ $(function () {
 	function updateBalance() {
 		$('#wallet_active .balance .value').text(Bitcoin.Util.formatValue(wallet.getBalance()));
 	}
+
+
+  $('#nav_colorize').click( function (e) {
+    e.preventDefault();
+    colorMan.colorizeWallet(wallet, function () { alert ('triumph');});
+  });
+        
 
 	// Send Money Dialog
 	var sendDialog = $('#dialog_send_money').dialog({
@@ -287,7 +296,8 @@ $(function () {
 				var transactionDb = new TransactionDatabase();
 				var transactionView = new TransactionView(al.find('.result').show().find('.txs'));
 				transactionView.setDatabase(transactionDb);
-				transactionDb.parseChainData(data);
+			    console.log(data);
+			    transactionDb.loadTransactions(data.txs);
 			}, 'json');
 		});
 	});
