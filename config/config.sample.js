@@ -19,6 +19,9 @@ Settings.defaultSettings = {
 	//
 	//fee: "0.0005",
 
+	// 0 = main, 0x6f = test3
+	addrType: 0x6f,
+
 	//
 	// Hostname of the default exit node
 	//
