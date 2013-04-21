@@ -239,7 +239,7 @@ $(function () {
 		var confirmButton = sendDialog.find('.confirm_send');
 		confirmButton.unbind('click');
 		confirmButton.click(function () {
-			var tx = wallet.createSend(new Bitcoin.Address(rcpt), value);
+			var tx = wallet.createSend(new Bitcoin.Address(rcpt), value, cfg.get('fee'));
 			var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
 
 			sendDialog.find('.loading').show();
