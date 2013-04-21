@@ -10,15 +10,16 @@ define(function () {
     var data = txdatacache[txHash];
     if (data)
       callback(data);
-    else
-      this.exitNode.call("txquery", {tx: txHash}, function (err, data) {
+    else {
+      this.exitNode.call("txquery", [txHash], function (err, data) {
         if (err) {                                                                             
 		alert("Error querying "+txHash+": " + data.error.message);
 		return;
 	}
-	txdatacache[txHash] = data;
-	callback(data);
+	txdatacache[txHash] = data.tx;
+	callback(data.tx);
       });
+    }
   }
 
   // move decimal point 8 places
@@ -96,6 +97,9 @@ define(function () {
   }
 
   function getColorByDefinition(txHash, outputIdx) {
+    // ok, could we -please- settle for one tx format already? 
+    txHash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(txHash).reverse())
+
     // embed some color definitions here for now.
     var defs = [{
       "issues": [{
@@ -236,7 +240,7 @@ define(function () {
   ColorMan.prototype.colorizeWallet = function (wallet, cont) {
     var left = wallet.unspentOuts.length;
     wallet.unspentOuts.forEach(function (utxo) {
-      var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(tx.hash).reverse());
+      var hash = tx.hash;
       getColor(hash, utxo.index, function (utxo_color) {
 	utxo.color = utxo_color;
 	left = left - 1;
