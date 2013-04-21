@@ -1,24 +1,25 @@
 define(function () {
-  var ColorMan = function () {
-    
+  var ColorMan = function (exitnode) {
+    this.exitNode = exitnode;
   };
 
   var txdatacache = {};
 
   function getTransaction(txHash, callback) {
+    // this should be probably in exitnode.js?
     var data = txdatacache[txHash];
     if (data)
       callback(data);
     else
-      $.ajax({
-	url: "/json/tx-v0/" + txHash,
-	dataType: "json"
-      }).done(function (data) {
+      this.exitNode.call("txquery", {tx: txHash}, function (err, data) {
+        if (err) {                                                                             
+		alert("Error querying "+txHash+": " + data.error.message);
+		return;
+	}
 	txdatacache[txHash] = data;
 	callback(data);
-      }).fail(function (what, thefuck) { alert('fail:' + what + ' ' + thefuck);});
+      });
   }
-
 
   // move decimal point 8 places
   function btcToSatoshi(s) {

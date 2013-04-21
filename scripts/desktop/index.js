@@ -74,7 +74,6 @@ $(function () {
 	var cfg = new Settings();
 	var wallet;
 	var wm = new WalletManager();
-        var colorMan = new ColorMan();
 	var txDb = new TransactionDatabase(); // Tx chain
 	var txMem = new TransactionDatabase(); // Memory pool
 	var txView = new TransactionView($('#main_tx_list'));
@@ -85,6 +84,7 @@ $(function () {
 	var exitNodeSecure = cfg.get('exitNodeSecure');
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
+        var colorMan = new ColorMan(exitNode);
 
   $('#exitnode_status').text(exitNodeHost);
 
