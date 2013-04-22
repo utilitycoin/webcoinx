@@ -98,9 +98,6 @@ define(function () {
   }
 
   function getColorByDefinition(txHash, outputIdx) {
-    // ok, could we -please- settle for one tx format already? 
-    txHash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(txHash).reverse())
-
     // embed some color definitions here for now.
     var defs = [{
       "issues": [{
