@@ -1,7 +1,9 @@
 define(function () {
   var exitNode = null;
-  var ColorMan = function (exitnode) {
+  var colorspace = null;
+  var ColorMan = function (exitnode, colordefs) {
     exitNode = exitnode;
+    this.reloadColors(colordefs);
   };
 
   var txdatacache = {};
@@ -99,39 +101,7 @@ define(function () {
 
   function getColorByDefinition(txHash, outputIdx) {
     // embed some color definitions here for now.
-    var defs = [{
-      "issues": [{
-        "outindex": 0, 
-        "txhash": "b1586cd10b32f78795b86e9a3febe58dcb59189175fad884a7f4a6623b77486e"
-      }], 
-      "style": "genesis", 
-      "name": "Blue", 
-      "unit": 1, 
-      "colorid": "8ec9668e393f2b7682daa2fd40eeee873c07c9ed"
-    },{
-      "metaprops": [
-        "name", 
-        "unit"
-      ], 
-      "metahash": "776d7100a4e22ca75d038d4e533b876f61ecc3a6", 
-      "name": "TESTcc", 
-      "colorid": "7452b90e22a0b758a048a3db9efa4fd361107350", 
-      "style": "genesis", 
-      "unit": 1, 
-      "issues": [{
-        "outindex": 0, 
-        "txhash": "c26166c7a387b85eca0adbb86811a9d122a5d96605627ad4125f17f6ddcbf89b"
-      }]
-    },{
-      "issues": [{
-        "outindex": 0, 
-        "txhash": "8f6c8751f39357cd42af97a67301127d497597ae699ad0670b4f649bd9e39abf"
-      }], 
-      "style": "genesis", 
-      "name": "Red", 
-      "unit": 1, 
-      "colorid": "f92734dea46ca06107244cc20e44276724846043"
-    }];
+    var defs = colorspace;
 
     // simply compare the given hash and out index with those in the 'issues'
     // field of each color definition. Return the 'name' field if we get a match.
@@ -247,6 +217,34 @@ define(function () {
       });
     });			  
   };
+
+  ColorMan.prototype.reloadColors = function(colordefs, cb) {
+     var urls = colordefs.replace("\r","").split("\n");
+     var doit;
+     var prev = null;
+     var clist = [];
+     colorspace = null;
+     doit = function(data,status,err) {
+        var url = urls.shift();
+        if (status) {
+                if (status != "success") {
+			alert('Failed to load ' + prev);
+		} else {
+ 	 		clist.push(data[0]);
+		}
+	}
+        if (!url) {
+                colorspace = clist;
+                console.log(clist);
+		if (cb) cb();
+		return;
+	};
+        prev = url;
+        $.ajax(url, {dataType: 'json' }).done(doit).fail(doit);
+     }
+     doit();
+  };
+
   return ColorMan;
 
 });
