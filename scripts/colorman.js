@@ -1,6 +1,7 @@
 define(function () {
+  var exitNode = null;
   var ColorMan = function (exitnode) {
-    this.exitNode = exitnode;
+    exitNode = exitnode;
   };
 
   var txdatacache = {};
@@ -11,9 +12,9 @@ define(function () {
     if (data)
       callback(data);
     else {
-      this.exitNode.call("txquery", [txHash], function (err, data) {
+      exitNode.call("txquery", [txHash], function (err, data) {
         if (err) {                                                                             
-		alert("Error querying "+txHash+": " + data.error.message);
+		alert("Error querying "+txHash+": " + err);
 		return;
 	}
 	txdatacache[txHash] = data.tx;
@@ -240,7 +241,7 @@ define(function () {
   ColorMan.prototype.colorizeWallet = function (wallet, cont) {
     var left = wallet.unspentOuts.length;
     wallet.unspentOuts.forEach(function (utxo) {
-      var hash = tx.hash;
+      var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(tx.hash).reverse());
       getColor(hash, utxo.index, function (utxo_color) {
 	utxo.color = utxo_color;
 	left = left - 1;
