@@ -1,5 +1,5 @@
 define(["jquery"], function ($) {
-  return function (cfg, wm, txDb, txMem, txView, exitNode) {
+  return function (cfg, wm, txDb, txMem, txView, exitNode, colorman) {
     txView.setDatabase(txDb);
     txView.setMemPool(txMem);
 
@@ -11,6 +11,9 @@ define(["jquery"], function ($) {
         exitNode.setSocket(cfg.get('exitNodeHost'),
                            cfg.get('exitNodePort'));
         exitNode.connect();
+        break;
+      case 'colordefUrls':
+        colorman.reloadColors(cfg.get('colordefUrls'));
         break;
       }
     });

@@ -84,11 +84,12 @@ $(function () {
 	var exitNodeSecure = cfg.get('exitNodeSecure');
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
-        var colorMan = new ColorMan(exitNode);
+	var colordefUrls = cfg.get('colordefUrls');
+        var colorMan = new ColorMan(exitNode, colordefUrls);
 
   $('#exitnode_status').text(exitNodeHost);
 
-  setCommonBindings(cfg, wm, txDb, txMem, txView, exitNode);
+  setCommonBindings(cfg, wm, txDb, txMem, txView, exitNode, colorMan);
 
 	$(exitNode).bind('connectStatus', function (e) {
 		console.log('connect', e);
@@ -311,6 +312,7 @@ $(function () {
 
 		// Populate exit node fields
 		cfgd.find('#dialog_settings_exitNodeHost').val(cfg.get('exitNodeHost'));
+		cfgd.find('#dialog_settings_colordefUrls').val(cfg.get('colordefUrls'));
 	});
 	cfgd.find('.controls .save').click(function (e) {
 		cfgd.dialog('close');
@@ -319,6 +321,7 @@ $(function () {
 
 		newSettings.fee = +$.fn.autoNumeric.Strip("dialog_settings_fee");
 		newSettings.exitNodeHost = cfgd.find('#dialog_settings_exitNodeHost').val();
+		newSettings.colordefUrls = cfgd.find('#dialog_settings_colordefUrls').val();
 
 		cfg.apply(newSettings);
 		return false;

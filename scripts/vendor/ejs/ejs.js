@@ -399,7 +399,7 @@ EJS.config = function(options){
 	
 	EJS.INVALID_PATH =  -1;
 };
-EJS.config( {cache: true, type: '<', ext: '.ejs' } );
+EJS.config( {cache: false, type: '<', ext: '.ejs' } );
 
 
 
