@@ -71,6 +71,11 @@ $(function () {
 		aPad: 2
 	};
 
+        var autoNumericColor = {
+		vMin: '0',
+		mDec: null,
+        };
+
 	var cfg = new Settings();
 	var wallet;
 	var wm = new WalletManager();
@@ -85,7 +90,7 @@ $(function () {
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
 	var colordefUrls = cfg.get('colordefUrls');
-        var colorMan = new ColorMan(exitNode, colordefUrls);
+        var colorMan = new ColorMan(exitNode);
 
   $('#exitnode_status').text(exitNodeHost);
 
@@ -149,18 +154,50 @@ $(function () {
 		$('#addr').val(addr);
 		addrClip.setText(addr);
 		addrClip.reposition();
+		wm.save();
 	});
 
+        function getColor() {
+             return $('#color_selector option:selected').val();
+        }
+        function getColorName() {
+             return $('#color_selector option:selected').text();
+        }
+
+
 	function updateBalance() {
-		$('#wallet_active .balance .value').text(Bitcoin.Util.formatValue(wallet.getBalance()));
+		var color = getColor(); // '' = BTC
+		v = Bitcoin.Util.formatValue(wallet.getBalance(color));
+                if (color) {
+                	// btc2color prevents rounding errors
+			v = colorMan.btc2color(v);
+                	autoNumericColor.aSign = getColorName() + ' ';
+			autoNumericColor.vMax = ''+v;
+			console.log(autoNumericColor);
+		}
+		$('#wallet_active .balance .value').text(v);
 	}
 
+	$('#color_selector').change(function() {
+		updateBalance();
+	});
 
-  $('#nav_colorize').click( function (e) {
-    e.preventDefault();
-    colorMan.colorizeWallet(wallet, function () { alert ('triumph');});
-  });
-        
+	$(wm).bind('walletUpdate', function() {
+		updateBalance();
+	});
+
+	$(colorMan).bind('colordefUpdate', function(e,d) {
+                console.log(d);
+		var sel = $('#color_selector');
+		sel.empty();
+		sel.append('<option value="">BTC</option>');
+		$(d).each(function() {
+			sel.append($('<option></option>')
+				.attr('value', this.colorid)
+				.text(this.name))
+		});
+	});
+
 
 	// Send Money Dialog
 	var sendDialog = $('#dialog_send_money').dialog({
@@ -168,13 +205,14 @@ $(function () {
 		minWidth: 550,
 		resizable: false
 	});
-	sendDialog.find('.amount').autoNumeric(autoNumericBtc);
 	$('#nav_send_money').click(function (e) {
-		e.preventDefault();
+		e.preventDefault();	
+		var an = getColor()?autoNumericColor:autoNumericBtc;
+		sendDialog.find('.amount').autoNumeric(an);
 		sendDialog.dialog('open');
 		sendDialog.find('.entry').show();
 		sendDialog.find('.confirm, .loading').hide();
-		sendDialog.find('.amount').val('BTC ').focus();
+		sendDialog.find('.amount').val(an.aSign).focus();
 		sendDialog.find('.address').val('');
 		sendDialog.find('.messages').empty();
 	});
@@ -203,13 +241,16 @@ $(function () {
 			validateError("Please enter an amount.");
 			return;
 		}
-    var value = Bitcoin.Util.parseValue(valueString);
+
+		var value = Bitcoin.Util.parseValue(valueString, getColor());
+
+
 		if (value.compareTo(BigInteger.ZERO) <= 0) {
-			validateError("Please enter a positive amount of Bitcoins.");
+			validateError("Please enter a positive amount of " + (getColorName()));
 			return;
 		}
 
-		if (value.compareTo(wallet.getBalance()) > 0) {
+		if (value.compareTo(wallet.getBalance(getColor())) > 0) {
 			validateError("You have insufficient funds for this transaction.");
 			return;
 		}
@@ -231,7 +272,7 @@ $(function () {
 			return;
 		}
 
-		sendDialog.find('.confirm_amount').text(Bitcoin.Util.formatValue(value)+' BTC');
+		sendDialog.find('.confirm_amount').text(valueString + ' ' + getColorName());
 		sendDialog.find('.confirm_address').text(rcpt);
 
 		sendDialog.find('.confirm').show();
@@ -240,7 +281,13 @@ $(function () {
 		var confirmButton = sendDialog.find('.confirm_send');
 		confirmButton.unbind('click');
 		confirmButton.click(function () {
-			var tx = wallet.createSend(new Bitcoin.Address(rcpt), value, cfg.get('fee'));
+			try {
+			var tx = wallet.createSend(new Bitcoin.Address(rcpt), value, Bitcoin.Util.parseValue(''+cfg.get('fee')), getColor());
+			} catch (e) {
+				alert(e.message);
+				return;
+			}
+			wm.save(); // dont forget change addresses
 			var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
 
 			sendDialog.find('.loading').show();

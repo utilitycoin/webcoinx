@@ -10,6 +10,7 @@
 	  <% } else { %>
 		  <th>Value</th>
 	  <% } %>
+          <th>Color</th>
 	  <th></th>
 	</tr>
   </thead>
@@ -28,17 +29,18 @@
 	  <% if (wallet) { %>
 		  <td><%=tx.getDescription(wallet)%></td>
 		  <% var impact = tx.calcImpact(wallet); %>
-		  <td><%=(impact.sign == -1) ? Bitcoin.Util.formatValue(impact.value) : ""%></td>
-		  <td><%=(impact.sign == 1) ? Bitcoin.Util.formatValue(impact.value) : ""%></td>
+		  <td><%=(impact.sign == -1) ? Bitcoin.Util.formatValue(impact.value, tx.color) : ""%></td>
+		  <td><%=(impact.sign == 1) ? Bitcoin.Util.formatValue(impact.value, tx.color) : ""%></td>
 	  <% } else { %>
-		  <td><%=Bitcoin.Util.formatValue(tx.getTotalValue())%></td>
+		  <td><%=Bitcoin.Util.formatValue(tx.getTotalValue(), tx.color)%></td>
 	  <% } %>
+                  <td><%=tx.color||"BTC"%>
 		  <td class="detail"><img src="images/detail.png" alt=""></td>
 		</tr>
 	<% } %>
 	<% if (!txs.length) { %>
 		<tr>
-		  <td colspan="<%=wallet ? "7" : "6"%>">No transactions</td>
+		  <td colspan="<%=wallet ? "8" : "7"%>">No transactions</td>
 		</tr>
 	<% } %>
   </tbody>

@@ -1,9 +1,9 @@
 define(function () {
   var exitNode = null;
   var colorspace = null;
-  var ColorMan = function (exitnode, colordefs) {
+  var id2name = {};
+  var ColorMan = function (exitnode) {
     exitNode = exitnode;
-    this.reloadColors(colordefs);
   };
 
   var txdatacache = {};
@@ -109,18 +109,18 @@ define(function () {
       var issues = defs[i].issues[0];
 
       if(issues.txhash === txHash && issues.outindex === outputIdx) {
-        return defs[i].name;
+        return defs[i].colorid;
       }
     }
 
     // if we've got here, then none of the definitions matched
-    return 'Unknown';
+    return null;
   }
 
   function getColor(txHash, outputIdx, callback) {
 
     function Helper(hash, idx, cb) {
-      this.color = 'Unknown';
+      this.color = null;
 
       // put initial transaction output in queue
       this.queue = [{
@@ -145,12 +145,12 @@ define(function () {
 
         // is the current input colored by definition?
         var color = getColorByDefinition(currentHash, currentOutIdx);
-        if(color !== 'Unknown') {
+        if(color !== null) {
           // if we've already got a provisional color
-          if(this.color !== 'Unknown') {
+          if(this.color !== null) {
             // make sure the new color matches
             if(this.color !== color) {
-              this.callback('None');
+              this.callback(null);
             } else {
               // it matches, keep searching
               this.getColorHelper();
@@ -170,7 +170,7 @@ define(function () {
           getTransaction(currentHash, function(tx) {
             // is it coinbase, then we can't go any deeper, so it isn't colored
             if(tx.in[0].type === 'coinbase') {
-              this.callback('None');
+              this.callback(null);
             }
 
             else {
@@ -204,21 +204,8 @@ define(function () {
     var helper = new Helper(txHash, outputIdx, callback);
   }
 
-
-  ColorMan.prototype.colorizeWallet = function (wallet, cont) {
-    var left = wallet.unspentOuts.length;
-    wallet.unspentOuts.forEach(function (utxo) {
-      var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(tx.hash).reverse());
-      getColor(hash, utxo.index, function (utxo_color) {
-	utxo.color = utxo_color;
-	left = left - 1;
-	if (left == 0)
-	  cont(wallet);
-      });
-    });			  
-  };
-
   ColorMan.prototype.reloadColors = function(colordefs, cb) {
+     var self = this;
      var urls = colordefs.replace("\r","").split("\n");
      var doit;
      var prev = null;
@@ -230,13 +217,16 @@ define(function () {
                 if (status != "success") {
 			alert('Failed to load ' + prev);
 		} else {
- 	 		clist.push(data[0]);
+			// XXX todo check for duplicates, verify the color data is actually correct etc
+			var c = data[0];
+			id2name[c.colorid] = c.name;
+ 	 		clist.push(c);
 		}
 	}
         if (!url) {
                 colorspace = clist;
-                console.log(clist);
 		if (cb) cb();
+		$(self).trigger('colordefUpdate', [colorspace]);
 		return;
 	};
         prev = url;
@@ -244,6 +234,30 @@ define(function () {
      }
      doit();
   };
+
+  // this must be called whenever utxo set changes, after colors are resolved
+  // walletUpdate event will be fired to notify gui of color changes
+  ColorMan.prototype.update = function(wm, cb) {
+    this.running = cb;
+    var wallet = wm.activeWallet.wallet;
+    var left = wallet.unspentOuts.length;
+    console.log('unspent outs '+left+ ' + colorspace + ' + colorspace.length);
+    wallet.unspentOuts.forEach(function (utxo) {
+      var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(utxo.tx.hash).reverse());
+      getColor(hash, utxo.index, function (utxo_color) {
+	utxo.color = utxo_color;
+        if (!utxo.tx.color) utxo.tx.color = id2name[utxo_color]; // ugly hack for txview
+	left = left - 1;
+	if (left == 0) {
+          cb();
+        }
+      });
+    });
+  };
+
+  ColorMan.prototype.btc2color = function(b) {
+     return btcToSatoshi(b);
+  }
 
   return ColorMan;
 
