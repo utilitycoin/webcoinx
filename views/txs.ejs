@@ -34,7 +34,7 @@
 	  <% } else { %>
 		  <td><%=Bitcoin.Util.formatValue(tx.getTotalValue(), tx.color)%></td>
 	  <% } %>
-                  <td><%=tx.color||"BTC"%>
+                  <td><%=tx.color==false?'BTC':tx.color%>
 		  <td class="detail"><img src="images/detail.png" alt=""></td>
 		</tr>
 	<% } %>

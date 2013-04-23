@@ -4,7 +4,6 @@ define(["jquery"], function ($) {
     txView.setMemPool(txMem);
 
     $(txDb).bind('update', function() {
-	console.log(txDb.txs);
     });
 
     $(cfg).bind('settingChange', function (e) {
@@ -48,40 +47,55 @@ define(["jquery"], function ($) {
     });
 
     $(exitNode).bind('txData', function (e) {
-      console.log('txdata');
+      console.log('ev txdata');
       for (var i = 0; i < e.txs.length; i++) {
         if (wm.activeWallet) {
           wm.activeWallet.wallet.process(e.txs[i]);
         }
       }
-      colorman.update(wm, function() {
+    colorman.update(wm, function() {
       $(wm).trigger('walletUpdate');
-      if (e.confirmed) {
-        txDb.loadTransactions(e.txs);
-      } else {
-        txMem.loadTransactions(e.txs);
-      }
-	});
+      var db = e.confirmed ? txDb : txMem;
+
+      var doit;
+      doit = function() {
+        var tx = e.txs.shift();
+        if (!tx) {
+      		$(db).trigger('update');
+		return;
+	}
+	colorman.txcolor(tx.hash, function(c) {
+           tx.color = c;
+           db.addTransactionNoUpdate(tx);
+           return doit();
+        });
+      } 
+      doit();
     });
+  });
 
     $(exitNode).bind('txAdd', function (e) {
-      console.log('txadd');
-      colorman.update(wm, function() {
-        $(wm).trigger('walletUpdate');
-        txDb.addTransaction(e.tx);
-        txMem.removeTransaction(e.tx.hash);
+      console.log('ev txAdd', e);
+      colorman.txcolor(e.tx.hash, function(c) {
+       e.tx.color = c;
+       txDb.addTransaction(e.tx);
+       txMem.removeTransaction(e.tx.hash); 
       });
     });
 
     $(exitNode).bind('txNotify', function (e) {
-      console.log('txNotify', e);
+      console.log('ev txNotify', e);
       if (wm.activeWallet) {
         wm.activeWallet.wallet.process(e.tx);
       }
       colorman.update(wm, function() {
           $(wm).trigger('walletUpdate');
-          txMem.addTransaction(e.tx);
       });
-    });
+      colorman.txcolor(e.tx.hash, function(c) {
+       e.tx.color = c;
+       txMem.addTransaction(e.tx);
+      });
+});
+
   };
 });

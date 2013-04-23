@@ -1,7 +1,7 @@
 define(function () {
   var exitNode = null;
   var colorspace = null;
-  var id2name = {};
+  var id2name = {false:false};
   var ColorMan = function (exitnode) {
     exitNode = exitnode;
   };
@@ -150,7 +150,7 @@ define(function () {
           if(this.color !== null) {
             // make sure the new color matches
             if(this.color !== color) {
-              this.callback(null);
+              this.callback(false);
             } else {
               // it matches, keep searching
               this.getColorHelper();
@@ -237,17 +237,18 @@ define(function () {
   };
 
   // this must be called whenever utxo set changes, after colors are resolved
-  // walletUpdate event will be fired to notify gui of color changes
   ColorMan.prototype.update = function(wm, cb) {
     this.running = cb;
     var wallet = wm.activeWallet.wallet;
     var left = wallet.unspentOuts.length;
-    console.log('unspent outs '+left+ ' + colorspace + ' + colorspace.length);
+    if (!left) {
+      cb();
+      return;
+    }
     wallet.unspentOuts.forEach(function (utxo) {
       var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(utxo.tx.hash).reverse());
       getColor(hash, utxo.index, function (utxo_color) {
 	utxo.color = utxo_color;
-        if (!utxo.tx.color) utxo.tx.color = id2name[utxo_color]; // ugly hack for txview
 	left = left - 1;
 	if (left == 0) {
           cb();
@@ -255,6 +256,11 @@ define(function () {
       });
     });
   };
+
+  ColorMan.prototype.txcolor = function(h, cb) {
+      var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(h).reverse());
+      getColor(hash, 0, function(c) {cb(id2name[c]);});
+  }
 
   ColorMan.prototype.btc2color = function(b) {
      return btcToSatoshi(b);
