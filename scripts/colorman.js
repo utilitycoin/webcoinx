@@ -169,8 +169,9 @@ define(function () {
         else {
           getTransaction(currentHash, function(tx) {
             // is it coinbase, then we can't go any deeper, so it isn't colored
+	    // false marks uncolored btc
             if(tx.in[0].type === 'coinbase') {
-              this.callback(null);
+              this.callback(false);
             }
 
             else {
