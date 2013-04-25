@@ -207,8 +207,8 @@ $(function () {
 	});
 	$('#nav_send_money').click(function (e) {
 		e.preventDefault();	
-		var an = getColor()?autoNumericColor:autoNumericBtc;
-		sendDialog.find('.amount').autoNumeric(an);
+		//var an = getColor()?autoNumericColor:autoNumericBtc;
+		//sendDialog.find('.amount').autoNumeric(an);
 		sendDialog.dialog('open');
 		sendDialog.find('.entry').show();
 		sendDialog.find('.confirm, .loading').hide();
