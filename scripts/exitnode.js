@@ -22,8 +22,7 @@ define(function () {
     // Workaround for socket.io not properly allowing disconnecting and reconnecting
     delete io.sockets[this.uri];
     io.j = [];
-
-	  this.socket = io.connect(this.uri);
+	  this.socket = io.connect(this.uri,{'connect timeout': 1000});
 	  this.socket.on('connect', $.proxy(this.handleConnect, this));
 	  this.socket.on('error', function (error) {
 		  console.log('socketio error:\n\t ' + error);
