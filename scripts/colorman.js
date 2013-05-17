@@ -113,7 +113,6 @@ define(function () {
       var issues = defs[i].issues[0];
 
       if(issues.txhash === txHash && issues.outindex === outputIdx) {
-        console.log('amtch!');
         return defs[i].colorid;
       }
     }
@@ -214,8 +213,6 @@ define(function () {
     // we always assume txhash:0, caller must ensure that
     ColorMan.prototype.issue = function(colordefs, name, unit, txhash, cb) {
         var url = colordefs.slice(1).split(" ")[0];
-        console.log(colordefs);
-        console.log(url);
         var data = {
             name: name,
             unit: unit,
@@ -247,10 +244,8 @@ define(function () {
                 if (status != "success") {
 			alert('Failed to load ' + fixurl(prev));
 		} else {
-            console.log('loaded');
 			// XXX better check for duplicates, verify the color data is actually correct etc
             for (var i = 0; i < data.length; i++) {
-                console.log(data);
 			    var c = data[i];
                 if (colormap[c.colorid]) continue; // dupe
                 c.server = prev;
@@ -284,7 +279,6 @@ define(function () {
     wallet.unspentOuts.forEach(function (utxo) {
       var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(utxo.tx.hash).reverse());
       getColor(hash, utxo.index, function (utxo_color) {
-    console.log("utxo "+hash+":"+utxo.index+"="+utxo_color);
 	utxo.color = utxo_color;
 	left = left - 1;
 	if (left == 0) {
@@ -316,7 +310,6 @@ define(function () {
     // convert from satoshi to color units
   ColorMan.prototype.s2c = function(color, balance) {
         if (!color) return balance;
-        console.log("color="+color);
         var units = colormap[color].unit;
         return balance.divide(BigInteger.valueOf(units));
     }

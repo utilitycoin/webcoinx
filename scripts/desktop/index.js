@@ -210,7 +210,6 @@ $(function () {
             } else {
                 allowedColors[c] = true;
             }
-            console.log('it is good');
             return true;
         }
 
@@ -230,9 +229,6 @@ $(function () {
                 cms.append(g);
             }
 
-            console.log('adding ');
-            console.log(this);
-            console.log(isgood(this.colorid));
 
             // append option to current optgroup
             g.appendChild(new Option(this.name, this.colorid, false, isgood(this.colorid)));
@@ -269,7 +265,7 @@ $(function () {
 		issueDialog.find('.entry').show();
 		issueDialog.find('.confirm, .loading').hide();
 		issueDialog.find('.dialog_issue_name').focus();
-		issueDialog.find('#dialog_issue_unit').val('1000');
+		issueDialog.find('#dialog_issue_unit').val('10000');
 		issueDialog.find('.messages').empty();
 	});
 	issueDialog.find('.cancel').click(function (e) {
@@ -453,7 +449,10 @@ $(function () {
             }
             // sha256 + @
             rcpt = rcpt.slice(41);
-            value.multiply(Bitcoin.Util.parseValue(cid.unit,1));
+            cid = colorMan.cmap(cid);
+            console.log('@@CID2');
+            console.log(cid);
+            value = value.multiply(Bitcoin.Util.parseValue(cid.unit,1));
         }
 
 
@@ -548,7 +547,6 @@ $(function () {
 				var transactionDb = new TransactionDatabase();
 				var transactionView = new TransactionView(al.find('.result').show().find('.txs'));
 				transactionView.setDatabase(transactionDb);
-			    console.log(data);
 			    transactionDb.loadTransactions(data.txs);
 			}, 'json');
 		});
@@ -557,13 +555,11 @@ $(function () {
 	// Settings Dialog
 	var cfgd = $('#dialog_settings');
     $('#color_multiselect').multiselect().on('multiselectChange', function(evt, ui) {
-        console.log(ui);
         for (var i = 0; i < ui.optionElements.length; i++) {
             var c = ui.optionElements[i];
             allowedColors[c.value] = ui.selected;
             $('#colorUrl').val(c.parentElement.label);
         }
-        console.log(allowedColors);
     });
 	cfgd.bind('dialogopen', function (e) {
 		// Populate fee field
@@ -592,14 +588,14 @@ $(function () {
         colordefServers = colordefServers + ' ' + url;
         cfgd.find('#colorUrl').val('');
         reload_colors();
+        return false;
     });
 
     cfgd.find('#delColorUrl').click(function(e) {
-        console.log(colordefServers);
         colordefServers = colordefServers.replace(' ' + cfgd.find('#colorUrl').val(), '');
-        console.log(colordefServers);
         cfgd.find('#colorUrl').val('');
         reload_colors();
+        return false;
     });
 
 	cfgd.find('.controls .save').click(function (e) {
@@ -613,6 +609,8 @@ $(function () {
 		newSettings.colordefServers = colordefServers;
 
 		cfg.apply(newSettings);
+        location.reload();
+        return false;
 	});
 	cfgd.find('.controls .cancel').click(function (e) {
 		cfgd.dialog('close');
