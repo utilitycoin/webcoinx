@@ -35,6 +35,7 @@ Settings.defaultSettings = {
 	// The default port for BitcoinJS exit nodes is 3125.
 	//
 	//exitNodePort: 3125,
+	colordefServers: " devel.hz.udoidio.info:8080"
 
 	//
 	// Whether the exit node uses HTTPS/SSL
