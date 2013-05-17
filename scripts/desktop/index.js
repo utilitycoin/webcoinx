@@ -81,16 +81,17 @@ $(function () {
 	var wm = new WalletManager();
 	var txDb = new TransactionDatabase(); // Tx chain
 	var txMem = new TransactionDatabase(); // Memory pool
-	var txView = new TransactionView($('#main_tx_list'));
 
 	// Once wallet is loaded, we can connect to the exit node
+    var allowedColors = cfg.get('allowedColors') || {};
 	var exitNodeHost = cfg.get('exitNodeHost');
 	var exitNodePort = cfg.get('exitNodePort');
 	var exitNodeSecure = cfg.get('exitNodeSecure');
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
-	var colordefUrls = cfg.get('colordefUrls');
-        var colorMan = new ColorMan(exitNode);
+	var colordefServers = cfg.get('colordefServers');
+    var colorMan = new ColorMan(exitNode);
+	var txView = new TransactionView($('#main_tx_list'), colorMan);
 
   $('#exitnode_status').text(exitNodeHost);
 
@@ -150,7 +151,7 @@ $(function () {
 
 	$('#wallet_active .new_addr').click(function (e) {
 		e.preventDefault();
-		var addr = wallet.getNextAddress().toString();
+		var addr = mangle_addr(wallet.getNextAddress().toString());
 		$('#addr').val(addr);
 		addrClip.setText(addr);
 		addrClip.reposition();
@@ -164,18 +165,25 @@ $(function () {
              return $('#color_selector option:selected').text();
         }
 
+    function mangle_addr(addr) {
+		var color = getColor(); // '' = BTC
+        return color!=''?(color+'@'+addr):addr;
+    }
 
 	function updateBalance() {
 		var color = getColor(); // '' = BTC
-		v = Bitcoin.Util.formatValue(wallet.getBalance(color));
+		v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
                 if (color) {
                 	// btc2color prevents rounding errors
-			v = colorMan.btc2color(v);
-                	autoNumericColor.aSign = getColorName() + ' ';
-			autoNumericColor.vMax = ''+v;
+			v = colorMan.btc2color(v,color);
+//                	autoNumericColor.aSign = getColorName() + ' ';
+//			autoNumericColor.vMax = ''+v;
 			console.log(autoNumericColor);
 		}
 		$('#wallet_active .balance .value').text(v);
+        $('#colorind').text(getColorName());
+ 		var addr = wallet.getCurAddress().toString();
+		$('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
 	}
 
 	$('#color_selector').change(function() {
@@ -187,15 +195,56 @@ $(function () {
 	});
 
 	$(colorMan).bind('colordefUpdate', function(e,d) {
-                console.log(d);
 		var sel = $('#color_selector');
 		sel.empty();
 		sel.append('<option value="">BTC</option>');
+        var first = $.isEmptyObject(allowedColors);
+        console.log('first='+first);
+        console.log(d);
+
+        console.log(allowedColors);
+
+        function isgood(c) {
+            if (!first) {
+                if (allowedColors[c] != true) return false;
+            } else {
+                allowedColors[c] = true;
+            }
+            console.log('it is good');
+            return true;
+        }
+
+        var cms = $('#color_multiselect');
+        cms.empty();
+
+        var g = null;
 		$(d).each(function() {
+            // flush optgroup
+            if (g && g.label != this.server)
+                g = null;
+
+            // new optgroup
+            if (!g) {
+                g = document.createElement('optgroup');
+                g.label = this.server;
+                cms.append(g);
+            }
+
+            console.log('adding ');
+            console.log(this);
+            console.log(isgood(this.colorid));
+
+            // append option to current optgroup
+            g.appendChild(new Option(this.name, this.colorid, false, isgood(this.colorid)));
+
+            // dont proceed unless selected
+            if (!isgood(this.colorid)) return;
+
 			sel.append($('<option></option>')
 				.attr('value', this.colorid)
 				.text(this.name))
 		});
+        cms.multiselect('refresh');
 	});
 
 
@@ -205,6 +254,144 @@ $(function () {
 		minWidth: 550,
 		resizable: false
 	});
+
+	var issueDialog = $('#dialog_issue_money').dialog({
+		autoOpen: false,
+		minWidth: 550,
+		resizable: false
+	});
+
+	$('#nav_issue_money').click(function (e) {
+		e.preventDefault();	
+		//var an = getColor()?autoNumericColor:autoNumericBtc;
+		//sendDialog.find('.amount').autoNumeric(an);
+		issueDialog.dialog('open');
+		issueDialog.find('.entry').show();
+		issueDialog.find('.confirm, .loading').hide();
+		issueDialog.find('.dialog_issue_name').focus();
+		issueDialog.find('#dialog_issue_unit').val('1000');
+		issueDialog.find('.messages').empty();
+	});
+	issueDialog.find('.cancel').click(function (e) {
+		e.preventDefault();
+		issueDialog.dialog('close');
+	});
+	issueDialog.find('.cancel_confirm').click(function (e) {
+		e.preventDefault();
+		issueDialog.find('.entry').show();
+		issueDialog.find('.confirm, .loading').hide();
+	});
+	issueDialog.find('.issue').click(function (e) {
+		e.preventDefault();
+		var msgHub = issueDialog.find('.messages');
+		msgHub.empty();
+
+		function validateError(msg) {
+			var msgObj = Message.create(msg, "error");
+			msgObj.appendTo(msgHub);
+		}
+
+
+		var name = issueDialog.find('#dialog_issue_name').val();
+		name = name.replace(/^\s+/, "").replace(/\s+$/, "");
+
+		if (!name.length) {
+			validateError("Please enter name of issued asset.");
+			return;
+		}
+
+		// Safe conversion from double to BigInteger
+		var amount_s = ""+$.fn.autoNumeric.Strip("dialog_issue_amount");
+		if (!amount_s) {
+			validateError("Please enter an amount.");
+			return;
+		}
+
+		var amount = Bitcoin.Util.parseValue(amount_s,1);
+
+		if (amount.compareTo(BigInteger.ZERO) <= 0) {
+			validateError("Please enter a positive amount of " + name);
+			return;
+		}
+
+
+		var unit_s = ""+$.fn.autoNumeric.Strip("dialog_issue_unit");
+		if (!unit_s) {
+			validateError("Please enter an unit size in satoshi.");
+			return;
+		}
+
+		var unit = Bitcoin.Util.parseValue(unit_s,1);
+
+		if (unit.compareTo(BigInteger.ZERO) <= 0) {
+			validateError("Please enter a positive amount of satoshi per unit");
+			return;
+		}
+
+        var cost = amount.multiply(unit);
+		if (cost.compareTo(wallet.getBalance()) > 0) {
+			validateError("You have insufficient BTC for this issue.");
+			return;
+		}
+
+        var cost_s = Bitcoin.Util.formatValue(cost);
+		issueDialog.find('.confirm_issue_amount').text(amount_s);
+		issueDialog.find('.confirm_issue_name').text(name);
+		issueDialog.find('.confirm_issue_cost').text(cost_s);
+
+		issueDialog.find('.confirm').show();
+		issueDialog.find('.entry, .loading').hide();
+
+		var confirmButton = issueDialog.find('.confirm_issue');
+		confirmButton.unbind('click');
+		confirmButton.click(function () {
+			try {
+			var tx = wallet.createSend(wallet.getCurAddress(), cost, Bitcoin.Util.parseValue(''+cfg.get('fee')), false);
+			} catch (e) {
+				alert(e.message);
+				return;
+			}
+			wm.save(); // dont forget change addresses
+			var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
+
+			issueDialog.find('.loading').show();
+			issueDialog.find('.entry, .confirm').hide();
+
+			issueDialog.find('.loading p').text("Issuing coins...");
+
+            // issue color, send transaction
+            colorMan.issue(colordefServers, name, unit_s, Crypto.util.bytesToHex(tx.getHash().reverse()), function(colorid,stat,xhr) {
+                        if (!colorid || colorid.length != 40) {
+                            validateError("Remote error while processing issuing transaction, cancelled");
+                            return;
+                        }
+
+                    allowedColors[colorid] = true;
+                    cfg.apply({allwedColors: allowedColors});
+        			var txHash = Crypto.util.bytesToBase64(tx.getHash());
+                    $(exitNode).bind('txNotify', function (e) {
+                        if (e.tx.hash == txHash) {
+                            // Our transaction
+                            issueDialog.dialog('close');
+                            $(exitNode).unbind('txNotify', arguments.callee);
+                            setTimeout(reload_colors, 1000);
+                        }
+                    });
+
+                     exitNode.call("txSend", {tx: txBase64}, function (err) {
+                        if (err) {
+                            validateError("Error while processing issuing transaction: " +
+                                                data.error.message);
+                            return;
+                        }
+                        issueDialog.find('.loading p').text("Awaiting reply...");
+                    });
+            });
+		});
+	});
+
+
+
 	$('#nav_send_money').click(function (e) {
 		e.preventDefault();	
 		//var an = getColor()?autoNumericColor:autoNumericBtc;
@@ -212,7 +399,7 @@ $(function () {
 		sendDialog.dialog('open');
 		sendDialog.find('.entry').show();
 		sendDialog.find('.confirm, .loading').hide();
-		sendDialog.find('.amount').val(an.aSign).focus();
+		sendDialog.find('.amount').focus();
 		sendDialog.find('.address').val('');
 		sendDialog.find('.messages').empty();
 	});
@@ -250,15 +437,31 @@ $(function () {
 			return;
 		}
 
+		var rcpt = sendDialog.find('.address').val();
+
+		// Trim address
+		rcpt = rcpt.replace(/^\s+/, "").replace(/\s+$/, "");
+        if (!rcpt) {
+			validateError("Enter address");
+            return;
+        }
+        var cid = getColor();
+         if (cid) {
+            if (rcpt.indexOf(cid + '@') != 0) {
+                validateError("Please use correct color address to prevent accidents");
+                return;
+            }
+            // sha256 + @
+            rcpt = rcpt.slice(41);
+            value.multiply(Bitcoin.Util.parseValue(cid.unit,1));
+        }
+
+
 		if (value.compareTo(wallet.getBalance(getColor())) > 0) {
 			validateError("You have insufficient funds for this transaction.");
 			return;
 		}
 
-		var rcpt = sendDialog.find('.address').val();
-
-		// Trim address
-		rcpt = rcpt.replace(/^\s+/, "").replace(/\s+$/, "");
 
 		if (!rcpt.length) {
 			validateError("Please enter the Bitcoin address of the recipient.");
@@ -322,6 +525,7 @@ $(function () {
 		al.find('.query').show();
 		$('#address_load').dialog('open');
 	});
+
 	$('#address_load_start').click(function () {
 		al.find('.query, .result').hide();
 		al.find('.progress').show().text('Loading transactions...');
@@ -352,6 +556,15 @@ $(function () {
 
 	// Settings Dialog
 	var cfgd = $('#dialog_settings');
+    $('#color_multiselect').multiselect().on('multiselectChange', function(evt, ui) {
+        console.log(ui);
+        for (var i = 0; i < ui.optionElements.length; i++) {
+            var c = ui.optionElements[i];
+            allowedColors[c.value] = ui.selected;
+            $('#colorUrl').val(c.parentElement.label);
+        }
+        console.log(allowedColors);
+    });
 	cfgd.bind('dialogopen', function (e) {
 		// Populate fee field
 		var fee = $.fn.autoNumeric.Format('dialog_settings_fee', cfg.get('fee'), autoNumericBtc);
@@ -359,8 +572,36 @@ $(function () {
 
 		// Populate exit node fields
 		cfgd.find('#dialog_settings_exitNodeHost').val(cfg.get('exitNodeHost'));
-		cfgd.find('#dialog_settings_colordefUrls').val(cfg.get('colordefUrls'));
+
+//        reload_colors();
+//		cfgd.find('#dialog_settings_colordefServers').val(cfg.get('colordefServers'));
 	});
+
+    // UGLY UGLY UGLY UGLY
+    function reload_colors() {
+        colorMan.reloadColors(colordefServers, function() { // triggers colordefUpdate above
+            colorMan.update(wm, function() {
+                $(wm).trigger('walletUpdate');
+            });
+        });
+    }
+
+    cfgd.find('#addColorUrl').click(function(e) {
+        var url = cfgd.find('#colorUrl').val();
+        if (colordefServers.indexOf(url) != -1) return;
+        colordefServers = colordefServers + ' ' + url;
+        cfgd.find('#colorUrl').val('');
+        reload_colors();
+    });
+
+    cfgd.find('#delColorUrl').click(function(e) {
+        console.log(colordefServers);
+        colordefServers = colordefServers.replace(' ' + cfgd.find('#colorUrl').val(), '');
+        console.log(colordefServers);
+        cfgd.find('#colorUrl').val('');
+        reload_colors();
+    });
+
 	cfgd.find('.controls .save').click(function (e) {
 		cfgd.dialog('close');
 
@@ -368,10 +609,10 @@ $(function () {
 
 		newSettings.fee = +$.fn.autoNumeric.Strip("dialog_settings_fee");
 		newSettings.exitNodeHost = cfgd.find('#dialog_settings_exitNodeHost').val();
-		newSettings.colordefUrls = cfgd.find('#dialog_settings_colordefUrls').val();
+        newSettings.allowedColors = allowedColors;
+		newSettings.colordefServers = colordefServers;
 
 		cfg.apply(newSettings);
-		return false;
 	});
 	cfgd.find('.controls .cancel').click(function (e) {
 		cfgd.dialog('close');
@@ -380,7 +621,8 @@ $(function () {
 	cfgd.dialog({
 		dialogClass: "block withsidebar",
 		autoOpen: false,
-		minWidth: 850,
+		minWidth: 600,
+        minHeight: 488,
 		resizable: false
 	});
 	$(".sidebar_content").hide();

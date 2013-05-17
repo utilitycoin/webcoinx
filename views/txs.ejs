@@ -10,7 +10,7 @@
 	  <% } else { %>
 		  <th>Value</th>
 	  <% } %>
-          <th>Color</th>
+          <th>Fees</th>
 	  <th></th>
 	</tr>
   </thead>
@@ -27,14 +27,15 @@
 		  <% } %>
 		  <td><%=new Date(tx.timestamp*1000).toUTCString()%></td>
 	  <% if (wallet) { %>
-		  <td><%=tx.getDescription(wallet)%></td>
-		  <% var impact = tx.calcImpact(wallet); %>
-		  <td><%=(impact.sign == -1) ? Bitcoin.Util.formatValue(impact.value, tx.color) : ""%></td>
-		  <td><%=(impact.sign == 1) ? Bitcoin.Util.formatValue(impact.value, tx.color) : ""%></td>
+		  <td><%=tx.getDescription(wallet,cm)%></td>
+		  <% var impact = tx.calcImpact(wallet,cm); %>
+		  <td><%=(impact.sign == -1) ? Bitcoin.Util.formatValue(cm.s2c(tx.color.colorid, impact.value), tx.color.name) : ""%></td>
+		  <td><%=(impact.sign == 1) ? Bitcoin.Util.formatValue(cm.s2c(tx.color.colorid, impact.value), tx.color.name) : ""%></td>
 	  <% } else { %>
 		  <td><%=Bitcoin.Util.formatValue(tx.getTotalValue(), tx.color)%></td>
 	  <% } %>
-                  <td><%=tx.color==false?'BTC':tx.color%>
+                  <td>
+<%=Bitcoin.Util.formatValue(impact.fees)%>
 		  <td class="detail"><img src="images/detail.png" alt=""></td>
 		</tr>
 	<% } %>

@@ -15,12 +15,13 @@ define(["jquery"], function ($) {
                            cfg.get('exitNodePort'));
         exitNode.connect();
         break;
-      case 'colordefUrls':
-        colorman.reloadColors(cfg.get('colordefUrls'), function() {
+/*      case 'colordefServers':
+      case 'allowedColors':
+        colorman.reloadColors(cfg.get('colordefServers'), function() {
 		colorman.update(wm, function() {
 			$(wm).trigger('walletUpdate');
 		});
-        });
+        });*/
         break;
       }
     });
@@ -28,7 +29,7 @@ define(["jquery"], function ($) {
     $(wm).bind('walletInit', function (e) {
       txView.setWallet(e.newWallet.wallet);
       // first load colors, then connect the wallet
-      colorman.reloadColors(cfg.get('colordefUrls'), function() {
+      colorman.reloadColors(cfg.get('colordefServers'), function() {
       		exitNode.connect(e.newWallet.wallet);
 	});
     });

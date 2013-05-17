@@ -1,12 +1,16 @@
 define(function () {
   var exitNode = null;
   var colorspace = null;
-  var id2name = {false:false};
+  var colormap = {false:false};
   var ColorMan = function (exitnode) {
     exitNode = exitnode;
   };
 
   var txdatacache = {};
+
+  function id2name(cid) {
+    return colormap[cid].name;
+  }
 
   function getTransaction(txHash, callback) {
     // this should be probably in exitnode.js?
@@ -100,8 +104,8 @@ define(function () {
   }
 
   function getColorByDefinition(txHash, outputIdx) {
-    // embed some color definitions here for now.
     var defs = colorspace;
+    // embed some color definitions here for now.
 
     // simply compare the given hash and out index with those in the 'issues'
     // field of each color definition. Return the 'name' field if we get a match.
@@ -109,6 +113,7 @@ define(function () {
       var issues = defs[i].issues[0];
 
       if(issues.txhash === txHash && issues.outindex === outputIdx) {
+        console.log('amtch!');
         return defs[i].colorid;
       }
     }
@@ -205,23 +210,53 @@ define(function () {
     var helper = new Helper(txHash, outputIdx, callback);
   }
 
+    // XXX do in-client issuing
+    // we always assume txhash:0, caller must ensure that
+    ColorMan.prototype.issue = function(colordefs, name, unit, txhash, cb) {
+        var url = colordefs.slice(1).split(" ")[0];
+        console.log(colordefs);
+        console.log(url);
+        var data = {
+            name: name,
+            unit: unit,
+            style: 'genesis',
+            data: txhash + ':0',
+            publickey: '',
+        }
+        $.post(url, data).done(cb).fail(cb);
+    }
+
   ColorMan.prototype.reloadColors = function(colordefs, cb) {
      var self = this;
-     var urls = colordefs.replace("\r","").split("\n");
+     var urls = colordefs.slice(1).split(" ");
      var doit;
      var prev = null;
      var clist = [];
      colorspace = null;
+     colormap = {false:false};
+
+    function fixurl(url) {
+        if (url[url.length-1] != '/')
+            url += '/';
+        return url;
+    }
+
      doit = function(data,status,err) {
         var url = urls.shift();
         if (status) {
                 if (status != "success") {
-			alert('Failed to load ' + prev);
+			alert('Failed to load ' + fixurl(prev));
 		} else {
-			// XXX todo check for duplicates, verify the color data is actually correct etc
-			var c = data[0];
-			id2name[c.colorid] = c.name;
- 	 		clist.push(c);
+            console.log('loaded');
+			// XXX better check for duplicates, verify the color data is actually correct etc
+            for (var i = 0; i < data.length; i++) {
+                console.log(data);
+			    var c = data[i];
+                if (colormap[c.colorid]) continue; // dupe
+                c.server = prev;
+                clist.push(c);
+       			colormap[c.colorid] = c;
+            }
 		}
 	}
         if (!url) {
@@ -231,7 +266,8 @@ define(function () {
 		return;
 	};
         prev = url;
-        $.ajax(url, {dataType: 'json' }).done(doit).fail(doit);
+
+        $.ajax(fixurl(url) + 'colorlist', {dataType: 'json' }).done(doit).fail(doit);
      }
      doit();
   };
@@ -248,6 +284,7 @@ define(function () {
     wallet.unspentOuts.forEach(function (utxo) {
       var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(utxo.tx.hash).reverse());
       getColor(hash, utxo.index, function (utxo_color) {
+    console.log("utxo "+hash+":"+utxo.index+"="+utxo_color);
 	utxo.color = utxo_color;
 	left = left - 1;
 	if (left == 0) {
@@ -257,14 +294,37 @@ define(function () {
     });
   };
 
+
   ColorMan.prototype.txcolor = function(h, cb) {
       var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(h).reverse());
-      getColor(hash, 0, function(c) {cb(id2name[c]);});
+      getColor(hash, 0, function(c) { cb(colormap[c]); });
   }
 
-  ColorMan.prototype.btc2color = function(b) {
+
+  ColorMan.prototype.cname = function(cid) {
+    return id2name(cid) || "BTC";
+  }
+
+  ColorMan.prototype.btc2color = function(b,c) {
      return btcToSatoshi(b);
   }
+
+  ColorMan.prototype.cmap = function(cid) {
+    return colormap[cid];
+  }
+
+    // convert from satoshi to color units
+  ColorMan.prototype.s2c = function(color, balance) {
+        if (!color) return balance;
+        console.log("color="+color);
+        var units = colormap[color].unit;
+        return balance.divide(BigInteger.valueOf(units));
+    }
+
+    ColorMan.prototype.is_issue = function(txhash) {
+        return getColorByDefinition(txhash,0);
+    }
+
 
   return ColorMan;
 

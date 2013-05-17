@@ -15,6 +15,7 @@ define(['../txview'], function (TransactionView) {
 	  html = new EJS({url: 'views/txs.ejs'}).render({
 		  self: self,
 		  txs: txs,
+          cm: self.cm,
 		  wallet: self.wallet,
 		  blockHeight: self.blockHeight
 	  });
