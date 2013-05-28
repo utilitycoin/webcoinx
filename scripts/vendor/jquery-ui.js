@@ -1,1 +1,1 @@
-/home/sd/bitcoinjs-gui/vendor/jquery-ui-bootstrap/assets/js/src/jquery-ui-1.10.2.custom.js
+../../vendor/jquery-ui-bootstrap/assets/js/src/jquery-ui-1.10.2.custom.js
