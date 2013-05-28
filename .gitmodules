@@ -2,5 +2,5 @@
 	path = scripts/vendor/bitcoinjs-lib
 	url = git://github.com/katuma/bitcoinjs-lib.git
 [submodule "vendor/bootstrap"]
-	path = bootstrap
-	url = git://github.com/twitter/bootstrap.git
+	path = vendor/jquery-ui-bootstrap
+	url = git://github.com/addyosmani/jquery-ui-bootstrap.git

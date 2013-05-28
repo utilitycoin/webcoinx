@@ -62,6 +62,7 @@
 		<p>
 		  <button id="nav_send_money">Send coins</button>
 		  <button id="nav_issue_money">Issue coins</button>
+		  <a href="#p2ptrade" role="button" class="btn" data-toggle="modal">p2ptrade</a>
 		  <button onclick="window.location.reload(true); return false;">Reload / sync</button>
 		</p>
 
@@ -232,4 +233,146 @@
 		<button class="cancel">Cancel</button> 
 	  </div>
 	  </form>
+
+
+
   </div>
+
+<style>
+.modal.span12{margin-left:-470px;width:940px;}
+.modal.span11{margin-left:-430px;width:860px;}
+.modal.span10{margin-left:-390px;width:780px;}
+.modal.span9{margin-left:-350px;width:700px;}
+.modal.span8{margin-left:-310px;width:620px;}
+.modal.span7{margin-left:-270px;width:540px;}
+.modal.span6{margin-left:-230px;width:460px;}
+.modal.span5{margin-left:-190px;width:380px;}
+.modal.span4{margin-left:-150px;width:300px;}
+.modal.span3{margin-left:-110px;width:220px;}
+.modal.span2{margin-left:-70px;width:140px;}
+.modal.span1{margin-left:-30px;width:60px;}
+.modal.scroll {
+	 max-height: 90%;
+     overflow-y: auto;
+}
+</style>
+<div id="p2ptrade" class="modal scroll hide span10" role="dialog">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+<h3>p2ptrade</h3>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="span4">
+      <div class="well well-small">
+        <h4>Buy TestTest1</h4>
+        <form class="form-inline">
+          <label class="control-label" for="quantity">Quantity (units)</label>
+          <input type="text" id="quantity" class="span2" value="" />
+          <label class="control-label" for="price">Price (BTC/unit)</label>
+          <input type="text" id="price" class="span2" value="" />
+          <p>Total BTC:</p>
+          
+          <button id="buy-button" class="btn btn-primary btn-block">Buy</button>
+        </form>
+      </div>
+    </div>
+    <div class="span4">
+      <div class="well well-small">
+        <h4>Sell TestTest1</h4>
+        <form class="form-inline">
+          <label class="control-label" for="quantity">Quantity (units)</label>
+          <input type="text" id="quantity" class="span2" value="" />
+          <label class="control-label" for="price">Price (BTC/unit)</label>
+          <input type="text" id="price" class="span2" value="" />
+          <p>Total BTC:</p>
+          
+          <button id="sell-button" class="btn btn-primary btn-block">Sell</button>
+        </form>
+      </div>
+   </div>
+  </div>
+  
+  <div class="row">
+    <div class="span4">
+      <div class="well well-small">
+        <h4>Bids:</h4>
+        
+        <table class="table table-bordered table-hover table-condensed">
+          <thead>
+              <tr>
+                <th>Quantity</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td></tr>
+			  <tr>
+                <td>1</td>
+                <td>1</td>
+			  </tr>
+              <tr>
+                <td>1</td>
+                <td>1</td>
+              </tr>
+			  <tr>
+                <td>1</td>
+                <td>1</td>
+			  </tr>
+
+            </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="span4">
+      <div class="well well-small">
+        <h4>Asks:</h4>
+        
+        <table class="table table-bordered table-hover table-condensed">
+          <thead>
+              <tr>
+                <th>Quantity</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+ </div> <!-- /container -->
+
+</div> <!-- /modal -->
+
