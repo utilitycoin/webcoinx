@@ -5,9 +5,9 @@ define([
   "./txview",
   "../bindings",
   "../colorman",
-  
   "../wallets/miniwallet"
-], function ($, WalletManager, ExitNode, TransactionView, setCommonBindings, ColorMan) {
+  "../../p2ptrade/p2pgui"
+], function ($, WalletManager, ExitNode, TransactionView, setCommonBindings, ColorMan, p2pgui) {
 
 $(function () {
   $('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css') );
@@ -92,6 +92,7 @@ $(function () {
 	var colordefServers = cfg.get('colordefServers');
     var colorMan = new ColorMan(exitNode);
 	var txView = new TransactionView($('#main_tx_list'), colorMan);
+	var p2pgui = new p2pgui(wm,colorMan);
 
   $('#exitnode_status').text(exitNodeHost);
 
