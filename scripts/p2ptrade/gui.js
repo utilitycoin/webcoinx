@@ -1,4 +1,4 @@
-define(["jquery", "p2pcomm", "p2pagent", "p2poffer", "p2pwallet"], function($,HTTPExchangeComm,ExchangePeerAgent,ExchangeOffer,MockWallet) {
+define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade/wallet"], function($,HTTPExchangeComm,ExchangePeerAgent,ExchangeOffer,MockWallet) {
 
 var comm = null;
 var epa = null;
@@ -17,7 +17,7 @@ function updateGUIstate () {
     $("#status").text(text);
 }
 
-var p2pgui = function(wm,cm) {
+function p2pgui(wm,cm) {
       comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
       epa = new ExchangePeerAgent(new MockWallet(), comm);
       comm.addAgent(epa);
@@ -51,7 +51,7 @@ var p2pgui = function(wm,cm) {
           });
 }      
 
-
-return p2p_gui;      
+console.log(p2pgui);
+return p2pgui;      
               
 });

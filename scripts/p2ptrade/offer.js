@@ -1,4 +1,12 @@
 define(["jquery"], function($) {
+     function log_event(ekind, msg) {
+         console.log("Event: " + ekind + " Msg:" + msg);
+     }
+     function now () {
+         return Math.round((new Date()).getTime()/1000);
+     }
+
+
      function ExchangeOffer(oid, A, B, auto_post) {
          // A = offerer's side, B = replyer's side
          // ie. offerer says "I want to give you A['value'] coins of color 
@@ -56,4 +64,5 @@ define(["jquery"], function($) {
          if (!checkprop('value')) return false;
          return true;
      };
+	 return ExchangeOffer;
 });

@@ -1,4 +1,12 @@
 define(["jquery"], function($) {
+     function log_event(ekind, msg) {
+         console.log("Event: " + ekind + " Msg:" + msg);
+     }
+     function now () {
+         return Math.round((new Date()).getTime()/1000);
+     }
+
+
      function ExchangePeerAgent(wallet, comm) {
          this.my_offers = {};
          this.their_offers = {};
@@ -208,4 +216,5 @@ define(["jquery"], function($) {
              log_event('error', "error in dispatchExchangeProposal: " + x.toString());
          }
      };
+	 return ExchangePeerAgent;
 });

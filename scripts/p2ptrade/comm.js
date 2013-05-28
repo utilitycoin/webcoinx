@@ -5,6 +5,13 @@ define(["jquery"], function($) {
          this.url = url || 'http://localhost:8090/messages';
          this.own_msgids = {};
      }
+     function log_event(ekind, msg) {
+         console.log("Event: " + ekind + " Msg:" + msg);
+     }
+     function now () {
+         return Math.round((new Date()).getTime()/1000);
+     }
+
 
      HTTPExchangeComm.prototype.STANDARD_OFFER_EXPIRY_INTERVAL = 60;
 	HTTPExchangeComm.prototype.STANDARD_OFFER_VALIDITY_INTERVAL = 15;
@@ -30,7 +37,7 @@ define(["jquery"], function($) {
          var data;
          var self = this;
          if (this.lastpoll == -1)
-             data = {from_timestamp: (now() - STANDARD_OFFER_EXPIRY_INTERVAL).toString()};
+             data = {from_timestamp: (now() - this.STANDARD_OFFER_EXPIRY_INTERVAL).toString()};
          else
              data = {from_serial: (this.lastpoll + 1).toString()};
          $.ajax({

@@ -1,4 +1,4 @@
-define(["jquery","p2poffer"], function($,ExchangeOffer) {
+define(["jquery","p2ptrade/offer"], function($,ExchangeOffer) {
      function ExchangeProposal (wallet) {
          this.wallet = wallet;
      }
