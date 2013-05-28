@@ -1,3 +1,6 @@
 [submodule "scripts/vendor/bitcoinjs-lib"]
 	path = scripts/vendor/bitcoinjs-lib
 	url = git://github.com/katuma/bitcoinjs-lib.git
+[submodule "vendor/bootstrap"]
+	path = bootstrap
+	url = git://github.com/twitter/bootstrap.git
