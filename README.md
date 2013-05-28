@@ -1,37 +1,57 @@
-# bitcoinjs-gui
-
-JavaScript client for the BitcoinJS API. This client connects to an
-[Exit Node](https://github.com/bitcoinjs/node-bitcoin-exit) and a
-[Wallet Node](https://github.com/bitcoinjs/node-bitcoin-wallet) to
-provide a full Bitcoin client in the browser.
-
-# Status
-
-The basic exit node functionality is implemented. However the client
-does not yet support the wallet API.
-
-Prototype software, use at your own peril.
-
-# Basic Usage
-
-## Configuration
-
-Copy the config/config.sample.js file to config/config.js and make any
-necessary adjustments.
-
-This defines the default settings for all users of your installation.
-
-## Installation
-
-Check out the code using
-
-``` sh
-git clone git://github.com/bitcoinjs/bitcoinjs-gui.git --recursive
+```
+git clone git@github.com:katuma/bitcoinjs-gui.git --recursive
+cd bitcoinjs-gui
+vi config/config.js
 ```
 
-From there, just make sure bitcoinjs-gui/index.html is accessible
-through an HTTP server.
+And put something like:
 
-## Running
+```
+//
+// bitcoinjs-gui server configuration defaults
+//
+// These settings are used as the defaults for all users connecting to
+// this version of the client.
+//
+// If you don't wish to change a setting, it is recommended that you
+// leave it commented out, so the global default will apply, which may
+// be updated/improved in the future.
+//
 
-Open the URL for bitcoinjs-gui in your browser.
+Settings.defaultSettings = {
+        //
+        // Default fee
+        //
+        // Normally you should not set this here, as future versions of
+        // bitcoinjs-gui will like adapt this setting as the network
+        // properties change.
+        //
+        //fee: "0.0005",
+
+        // 0 = main, 0x6f = test3
+        addrType: 0x6f,
+
+        //
+        // Hostname of the default exit node
+        //
+        // Defaults to location.host
+        //
+        exitNodeHost: "webcoinx.tumak.cz",
+
+        //
+        // Port of the default exit node
+        //
+        // The default port for BitcoinJS exit nodes is 3125.
+        //
+        exitNodePort: 80,
+        colordefServers: " http://webcoinx.tumak.cz/colordefs"
+
+        //
+        // Whether the exit node uses HTTPS/SSL
+        //
+        // Defaults to false
+        //
+        //exitNodeSecure: false
+};
+
+```
