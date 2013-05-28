@@ -1,4 +1,4 @@
-define("jquery", "p2pcomm", "p2pagent", "p2poffer", "p2pwallet", function($,HTTPExchangeComm,ExchangePeerAgent,MyExchangeOffer,MockWallet) {
+define(["jquery", "p2pcomm", "p2pagent", "p2poffer", "p2pwallet"], function($,HTTPExchangeComm,ExchangePeerAgent,ExchangeOffer,MockWallet) {
 
 var comm = null;
 var epa = null;
@@ -29,25 +29,25 @@ var p2pgui = function(wm,cm) {
       $('#buy-button').click(
           function () {
               epa.registerMyOffer( 
-                  new MyExchangeOffer(null, {
+                  new ExchangeOffer(null, {
                                           colorid: color1,
                                           value: 11
                                       }, {
                                           colorid: color2,
                                           value: 22
-                                      }));
+                                      }, true));
           });
 
       $('#sell-button').click(
           function () {
               epa.registerMyOffer( 
-                  new MyExchangeOffer(null, {
+                  new ExchangeOffer(null, {
                                           colorid: color2,
                                           value: 22
                                       }, {
                                           colorid: color1,
                                           value: 11
-                                      }));
+                                      }, true));
           });
 }      
 

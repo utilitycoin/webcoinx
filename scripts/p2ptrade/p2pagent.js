@@ -1,4 +1,4 @@
-define("jquery", function($) {
+define(["jquery"], function($) {
      function ExchangePeerAgent(wallet, comm) {
          this.my_offers = {};
          this.their_offers = {};
@@ -208,4 +208,4 @@ define("jquery", function($) {
              log_event('error', "error in dispatchExchangeProposal: " + x.toString());
          }
      };
-}
+});

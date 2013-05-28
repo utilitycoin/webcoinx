@@ -1,5 +1,5 @@
-define("jquery", function($) {
-     function ExchangeOffer(oid, A, B) {
+define(["jquery"], function($) {
+     function ExchangeOffer(oid, A, B, auto_post) {
          // A = offerer's side, B = replyer's side
          // ie. offerer says "I want to give you A['value'] coins of color 
          // A['colorid'] and receive B['value'] coins of color B['colorid']"
@@ -17,6 +17,7 @@ define("jquery", function($) {
          this.A = A;
          this.B = B;
          this.expires = null;
+         this.auto_post = auto_post;
      }
      ExchangeOffer.prototype.getData = function () {
          return {
@@ -55,48 +56,4 @@ define("jquery", function($) {
          if (!checkprop('value')) return false;
          return true;
      };
-     
-     function MyExchangeOffer (oid, A, B, auto_post){
-         ExchangeOffer.apply(this, arguments);
-         this.auto_post = (auto_post === false) ? false : true;
-     };
-     MyExchangeOffer.prototype = new ExchangeOffer();
-
-    
-     function ExchangeProposal (wallet) {
-         this.wallet = wallet;
-     }
-     ExchangeProposal.prototype.createNew = function (offer, etx, my_offer) {
-         this.pid = make_random_id();
-         this.offer = offer;
-         this.etx = etx;
-         this.my_offer = my_offer;
-         this.state = 'proposed';
-     };
-     ExchangeProposal.prototype.getData = function () {
-         return {
-             pid: this.pid,
-             offer: this.offer.getData(),
-             tx: this.etx.getData()
-         };
-     };
-     ExchangeProposal.prototype.importTheirs = function (data) {
-         this.pid = data.pid;
-         this.offer = new ExchangeOffer(data.offer);
-         this.etx = this.wallet.importTx(data.tx);
-         this.my_offer = null;
-         this.state = 'imported';
-     };
-     ExchangeProposal.prototype.addMyTranche = function (p) {
-         this.etx.appendTx(p);
-     };
-     ExchangeProposal.prototype.checkOutputsToMe = function (myaddress, color, value) {
-         /*  Does their tranche have enough of the color
-          that I want going to my address? */
-         return this.etx.checkOutputsToMe(myaddress, color, value);
-     };
-     ExchangeProposal.prototype.signMyInputs = function (reftx) {
-         return this.etx.signMyInputs(reftx);
-     };
-	 return MyExchangeOffer;
-}
+});

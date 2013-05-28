@@ -1,4 +1,4 @@
-define("jquery", function($) {
+define(["jquery"], function($) {
      function HTTPExchangeComm (url) {
          this.agents = [];
          this.lastpoll = -1;
@@ -68,4 +68,4 @@ define("jquery", function($) {
                               });
      };
 	return HTTPExchangeComm;     
-}
+});
