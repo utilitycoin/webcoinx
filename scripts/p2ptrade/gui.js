@@ -19,7 +19,7 @@ function updateGUIstate () {
 
 function p2pgui(wm,cm) {
       comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
-      epa = new ExchangePeerAgent(new MockWallet(), comm);
+      epa = new ExchangePeerAgent(new MockWallet(wm), comm);
       comm.addAgent(epa);
       window.setInterval(function () {
                              comm.update();
