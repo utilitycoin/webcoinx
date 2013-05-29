@@ -6,6 +6,17 @@ define(["jquery"], function($) {
          return Math.round((new Date()).getTime()/1000);
      }
 
+     var STANDARD_OFFER_EXPIRY_INTERVAL = 60;
+
+     function make_random_id() {
+         var text = "";
+         var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+         for( var i=0; i < 10; i++ )
+             text += possible.charAt(Math.floor(Math.random() * possible.length));
+         return text;
+     }
+
 
      function ExchangeOffer(oid, A, B, auto_post) {
          // A = offerer's side, B = replyer's side

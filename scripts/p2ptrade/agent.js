@@ -1,4 +1,4 @@
-define(["jquery"], function($) {
+define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOffer, ExchangeProposal) {
      function log_event(ekind, msg) {
          console.log("Event: " + ekind + " Msg:" + msg);
      }
@@ -6,6 +6,10 @@ define(["jquery"], function($) {
          return Math.round((new Date()).getTime()/1000);
      }
 
+     function  resolveColor(colorid) {
+         //TODO: barf if colorid is not recognized
+         return colorid;
+     }
 
      function ExchangePeerAgent(wallet, comm) {
          this.my_offers = {};

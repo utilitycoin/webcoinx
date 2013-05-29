@@ -1,4 +1,16 @@
 define(["jquery","p2ptrade/offer"], function($,ExchangeOffer) {
+
+     function make_random_id() {
+         var text = "";
+         var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+         for( var i=0; i < 10; i++ )
+             text += possible.charAt(Math.floor(Math.random() * possible.length));
+         return text;
+     }
+
+
+
      function ExchangeProposal (wallet) {
          this.wallet = wallet;
      }

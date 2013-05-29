@@ -27,7 +27,8 @@ function p2pgui(wm,cm) {
                          }, 2000);
 
       $('#buy-button').click(
-          function () {
+          function (event) {
+              event.preventDefault();
               epa.registerMyOffer( 
                   new ExchangeOffer(null, {
                                           colorid: color1,
@@ -40,6 +41,7 @@ function p2pgui(wm,cm) {
 
       $('#sell-button').click(
           function () {
+              event.preventDefault();
               epa.registerMyOffer( 
                   new ExchangeOffer(null, {
                                           colorid: color2,
