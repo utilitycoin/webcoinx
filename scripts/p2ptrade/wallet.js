@@ -12,6 +12,10 @@ define(["jquery"], function($) {
          return text;
      }
 
+     MockExchangeTransaction.prototype.collectMyOutpoints = function(colorid) {
+        
+     };
+
 
      function MockExchangeTransaction (wallet, data) {
          this.wallet = wallet;
@@ -25,6 +29,16 @@ define(["jquery"], function($) {
                                      total += out.value;
                                  });
          return (total >= value);
+     };
+     MockExchangeTransaction.prototype.convert = function(first_argument) {
+         var tx = new BitcoinTransaction();
+         this.tx.inp.forEach(function(inp) {
+            tx.ins.push(new TransactionIn({
+                outpoint: inp.outpoint,
+                script: script: new Bitcoin.Script(),
+                sequence: 4294967295
+            });
+         });
      };
      MockExchangeTransaction.prototype.signMyInputs = function (reftx) {
          var my = reftx ? reftx.my : this.my;
@@ -70,15 +84,15 @@ define(["jquery"], function($) {
          this.id = make_random_id();
      }
      MockWallet.prototype.getAddress = function (colorid, is_change) {
-			 return 'a_' + this.wallet.getCurAddress().toString();
+			 return this.wallet.getCurAddress().toString();
      };
      MockWallet.prototype.createPayment = function (color, amount, to_address) {
-         var outpoint= "o_" + this.id + "_" + make_random_id();
+         var outpoints = this.collectMyOutpoints(color);
          return new MockExchangeTransaction(this, 
                                             {
-                                                tx: {inp: [{outpoint: outpoint, signed: false}],
+                                                tx: {inp: [outpoints],
                                                      out: [{to: to_address, value: amount, color: color}]},
-                                                my: [outpoint]
+                                                my: outpoints
                                             });
      };
      MockWallet.prototype.importTx = function (tx_data) {
