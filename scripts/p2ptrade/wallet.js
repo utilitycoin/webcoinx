@@ -41,11 +41,12 @@ define(["jquery"], function($) {
          return true;
      };
      MockExchangeTransaction.prototype.hasEnoughSignatures = function (){
-         for (var i in this.tx.inp) {
-             if (!this.tx.inp[i].signed)
-                 return false;
-         }
-         return true;
+         var ok = true;
+         this.tx.inp.forEach(function (inp) {
+                                if (!inp.signed) 
+                                    ok = false;
+                             });
+         return ok;
      };
      MockExchangeTransaction.prototype.appendTx = function (etx) {
          // TODO: handle colors?
