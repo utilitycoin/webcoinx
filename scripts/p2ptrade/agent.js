@@ -136,12 +136,17 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
          log_event("ExchangePeerAgent.dispatchExchangeProposal");
          var ep = new ExchangeProposal(this.wallet);
          ep.importTheirs(ep_data);
+         var self = this;
          if (this.hasActiveEP()) {
              if (ep.pid == this.active_ep.pid)
-                 return this.updateExchangeProposal(ep);
+                 ep.etx.fetchOutputColors(function () { 
+                                              self.updateExchangeProposal(ep);
+                                          });
          } else {
              if (this.my_offers[ep.offer.oid])
-                 return this.acceptExchangeProposal(ep);
+                 ep.etx.fetchOutputColors(function () {
+                                              self.acceptExchangeProposal(ep);
+                                          });
          }
         // We have neither an offer nor a proposal matching this ExchangeProposal
         if (this.their_offers[ep.offer.oid]) {

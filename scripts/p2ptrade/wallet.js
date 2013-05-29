@@ -22,6 +22,11 @@ define(["jquery"], function($) {
          this.tx = data.tx;
          this.my = data.my;
      }
+     MockExchangeTransaction.prototype.fetchOutputColors = function (next) {
+         // TODO: use colorman on all outputs we don't know, and after colors are known
+         // call next
+         next();
+     };
      MockExchangeTransaction.prototype.checkOutputsToMe = function (myaddress, color, value) {
          var total = 0;
          this.tx.out.forEach(function (out) {
