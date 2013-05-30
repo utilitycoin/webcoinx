@@ -12,7 +12,9 @@ define(function () {
   };
 
   ExitNode.prototype.setSocket = function (host, port, secure) {
-    this.uri = (secure ? "https://" : "http://")+host+":"+port;
+    if (host.indexOf(':') < 0)
+      host = host + ":" + port;
+    this.uri = (secure ? "https://" : "http://")+host;
   };
 
   ExitNode.prototype.connect = function (wallet) {
