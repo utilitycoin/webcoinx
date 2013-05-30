@@ -19,9 +19,25 @@ define(["jquery"], function($) {
             this.realtx = null;
         }
 
+        // color representation everywhere:
+        // "c010...." - colorid
+        // false - btc
+        // undefined/null - we're not sure (waiting for colorman)
+
         // returns { list: [ "txhash:id" , "txhash:id" ... ], total: sum_of_utxos }
         MockExchangeTransaction.prototype.collectMyUTXOs = function(colorid) {
+            var real = this.getRealTx();
+            var w = this.wallet.wm.wallet;
+            var res = [];
+            var val = 0;
 
+            for (var i = 0; i < w.unspentOuts.length; i++) {
+                if (!w.isGoodColor(i, colorid)) continue;
+                var utxo = w.unspentOuts[i];
+                res.push(utxo.tx.hash + ":" + utxo.index);
+                val += utxo.tx.value;
+            }
+            return { list: res, total: val };
         };
 
 
