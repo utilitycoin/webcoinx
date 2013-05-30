@@ -19,27 +19,6 @@ define(["jquery"], function($) {
             this.realtx = null;
         }
 
-        // color representation everywhere:
-        // "c010...." - colorid
-        // false - btc
-        // undefined/null - we're not sure (waiting for colorman)
-
-        // returns { list: [ "txhash:id" , "txhash:id" ... ], total: sum_of_utxos }
-        MockExchangeTransaction.prototype.collectMyUTXOs = function(colorid) {
-            var real = this.getRealTx();
-            var w = this.wallet.wm.wallet;
-            var res = [];
-            var val = 0;
-
-            for (var i = 0; i < w.unspentOuts.length; i++) {
-                if (!w.isGoodColor(i, colorid)) continue;
-                var utxo = w.unspentOuts[i];
-                res.push(utxo.tx.hash + ":" + utxo.index);
-                val += utxo.tx.value;
-            }
-            return { list: res, total: val };
-        };
-
 
         MockExchangeTransaction.prototype.fetchOutputColors = function(next) {
             // TODO: use colorman on all outputs we don't know, and after colors are known
@@ -148,16 +127,42 @@ define(["jquery"], function($) {
             this.exit = exit;
             this.wm = wm;
         }
+
+
+
         MockWallet.prototype.sendTx(tx, cb) {
             var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
             return this.exit.call("txSend", {tx:txBase64}, cb || function(){});
         }
+
+
+        // color representation everywhere:
+        // "c010...." - colorid
+        // false - btc
+        // undefined/null - we're not sure (waiting for colorman)
+
+        // returns { list: [ "txhash:id" , "txhash:id" ... ], total: sum_of_utxos }
+        MockWallet.prototype.collectMyUTXOs = function(colorid) {
+            var w = this.wallet;
+            var res = [];
+            var val = 0;
+
+            for (var i = 0; i < w.unspentOuts.length; i++) {
+                if (!w.isGoodColor(i, colorid)) continue;
+                var utxo = w.unspentOuts[i];
+                res.push(utxo.tx.hash + ":" + utxo.index);
+                val += utxo.tx.value;
+            }
+            return { list: res, total: val };
+        };
+
+
         MockWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
             var utxos = this.collectMyUTXOs(color, amount);
-            var t = MockExchangeTransaction(this, {
+            var t = new MockExchangeTransaction(this, {
                 tx: {
                     inp: utxos.list.forEach(function(utxo) {
                         return {
@@ -175,21 +180,22 @@ define(["jquery"], function($) {
                 },
                 my: outpoints
             });
-        // if the total is larger, append sending change back
-        if (utxos.total > amount) {
-            t.tx.out.push({
-                    to: this.getAddress(),
-                    value: utxos.total - amount
-                });
-            t.realtx = null;
-        }
-        return t;
-    }; MockWallet.prototype.importTx = function(tx_data) {
-        return new MockExchangeTransaction(this, {
+            // if the total is larger, append sending change back
+            if (utxos.total > amount) {
+                t.tx.out.push({
+                        to: this.getAddress(),
+                        value: utxos.total - amount
+                    });
+                t.realtx = null;
+            }
+            return t;
+        };
+        MockWallet.prototype.importTx = function(tx_data) {
+            return new MockExchangeTransaction(this, {
                 tx: tx_data,
                 my: []
             });
-    };
+        };
 
-    return MockWallet;
+        return MockWallet;
 });
