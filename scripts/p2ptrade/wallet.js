@@ -75,26 +75,24 @@ define(["jquery"], function($) {
 
             for (var i = 0; i < this.tx.inp.length; i++) {
                 var inp = this.tx.inp[i];
-                if (my.indexOf(inp.outpoint) < 0) continue;
-                var utxo = real.ins[i].utxo;
-                if (!utxo)
-                    throw "missing utxo for outpoint";
-                var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
-                var pkhash = utxo.out.script.simpleOutPubKeyHash();
-                var sig = this.signWithKey(pkhash, hash);
-                sig.push(parseInt(hashType, 10));
-                var pk = real.getPubKeyFromHash(pkhash);
+                if (my.indexOf(inp.outpoint) >= 0) {
+                    var utxo = real.ins[i].utxo;
+                    if (!utxo)
+                        throw "missing utxo for outpoint";
+                    var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
+                    var pkhash = utxo.out.script.simpleOutPubKeyHash();
+                    var sig = this.signWithKey(pkhash, hash);
+                    sig.push(parseInt(hashType, 10));
+                    var pk = real.getPubKeyFromHash(pkhash);
 
-                // this will be done somewhere else when real is reconstructed to be dispatched off to network 
-                //			 real.ins[i].script = Script.createInputScript(sig, pk);
-                inp.signed = {
-                    sig: sig,
-                    pk: pk
-                };
+                    inp.signed = {
+                        sig: sig,
+                        pk: pk
+                    };                    
+                }
+                real.ins[i].script = Script.createInputScript(inp.signed.sig, inp.signed.pk);
             }
-            this.tx.inp.forEach(function(inp) {
-                    inp.signed = true;
-                });
+
             return true;
         };
         MockExchangeTransaction.prototype.broadcast = function() {
