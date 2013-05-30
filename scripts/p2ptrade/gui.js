@@ -17,9 +17,9 @@ define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade
             $("#status").text(text);
         }
 
-        function p2pgui(wm, cm) {
+        function p2pgui(wm, cm, exit) {
             comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
-            epa = new ExchangePeerAgent(new MockWallet(wm), comm);
+            epa = new ExchangePeerAgent(new MockWallet(wm, cm, exit), comm);
             comm.addAgent(epa);
             window.setInterval(function() {
                     comm.update();

@@ -3,15 +3,6 @@ define(["jquery"], function($) {
             console.log("Event: " + ekind + " Msg:" + msg);
         }
 
-        function make_random_id() {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-            for (var i = 0; i < 10; i++)
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-            return text;
-        }
-
         function MockExchangeTransaction(wallet, data) {
             this.wallet = wallet;
             this.tx = data.tx;
@@ -118,7 +109,7 @@ define(["jquery"], function($) {
             return this.tx;
         };
 
-        function MockWallet(wm,exit) {
+        function MockWallet(wm,cm,exit) {
             // here we go again :(
             var self = this;
             $(wm).bind('walletInit', function(e) {
@@ -126,6 +117,8 @@ define(["jquery"], function($) {
                 });
             this.exit = exit;
             this.wm = wm;
+            this.cm = cm;
+            this.exit = exit;
         }
 
 
