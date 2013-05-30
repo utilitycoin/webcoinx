@@ -12,18 +12,19 @@ define(["jquery"], function($) {
             return text;
         }
 
-        // returns [ "txhash:id" , "txhash:id" ... ]
-        MockExchangeTransaction.prototype.collectMyOutpoints = function(colorid) {
-
-        };
-
-
         function MockExchangeTransaction(wallet, data) {
             this.wallet = wallet;
             this.tx = data.tx;
             this.my = data.my;
             this.realtx = null;
         }
+
+        // returns { list: [ "txhash:id" , "txhash:id" ... ], total: sum_of_utxos }
+        MockExchangeTransaction.prototype.collectMyUTXOs = function(colorid) {
+
+        };
+
+
         MockExchangeTransaction.prototype.fetchOutputColors = function(next) {
             // TODO: use colorman on all outputs we don't know, and after colors are known
             // call next
@@ -95,10 +96,11 @@ define(["jquery"], function($) {
 
             return true;
         };
-        MockExchangeTransaction.prototype.broadcast = function() {
+        MockExchangeTransaction.prototype.broadcast = function(cb) {
             log_event("MockExchangeTransaction.broadcast");
             if (!this.hasEnoughSignatures())
                 throw "trying to broadcast tx without enough signatures";
+            this.wallet.sendTx(this.realtx, cb);
             return true;
         };
         MockExchangeTransaction.prototype.hasEnoughSignatures = function() {
@@ -121,33 +123,33 @@ define(["jquery"], function($) {
             return this.tx;
         };
 
-        function MockWallet(wm) {
+        function MockWallet(wm,exit) {
             // here we go again :(
             var self = this;
             $(wm).bind('walletInit', function(e) {
-                    console.log('wallet creep');
                     self.wallet = e.newWallet.wallet;
-                    console.log(self.wallet);
                 });
+            this.exit = exit;
             this.wm = wm;
-            this.id = make_random_id();
+        }
+        MockWallet.prototype.sendTx(tx, cb) {
+            var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
+            return this.exit.call("txSend", {tx:txBase64}, cb || function(){});
         }
         MockWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
-            var utxos = this.collectMyUTXO(color, amount);
+            var utxos = this.collectMyUTXOs(color, amount);
             var t = MockExchangeTransaction(this, {
-                    tx: {
-                        inp: utxos.list.forEach.
-                        function(utxo) {
-                            return {
-                                outpoint: utxo.outpoint,
-                                utxo: utxo,
-                                signed: false
-                            };
-                        }
-                    },
+                tx: {
+                    inp: utxos.list.forEach(function(utxo) {
+                        return {
+                            outpoint: utxo.outpoint,
+                            utxo: utxo,
+                            signed: false
+                        };
+                    }),
                     out: [{
                             to: to_address,
                             value: amount,
