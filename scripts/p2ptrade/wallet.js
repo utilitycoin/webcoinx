@@ -123,10 +123,10 @@ define(["jquery"], function($) {
 
 
 
-        MockWallet.prototype.sendTx = function(tx, cb) {
+        MockWallet.prototype.sendTx = function (tx, cb) {
             var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
             return this.exit.call("txSend", {tx:txBase64}, cb || function(){});
-        }
+        };
 
 
         // color representation everywhere:
