@@ -12,14 +12,14 @@ define(["jquery"], function($) {
 
 
         MockExchangeTransaction.prototype.fetchOutputColors = function(next) {
-            // TODO: use colorman on all outputs we don't know, and after colors are known
+            // XXX TODO: use colorman on all outputs we don't know, and after colors are known
             // call next
             next();
         };
         MockExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
             var total = 0;
             this.tx.out.forEach(function(out) {
-                    if (out.to == myaddress && out.color == color)
+                    if (out.to == myaddress/* && out.color == color*/) // XXX uncomment when fetchOutputColors works
                         total += out.value;
                 });
             return (total >= value);
@@ -37,7 +37,7 @@ define(["jquery"], function($) {
             this.tx.inp.forEach(function(inp) {
                     realtx.ins.push(new TransactionIn({
                                 outpoint: inp.outpoint,
-                                script: script: new Bitcoin.Script(),
+                                script: new Bitcoin.Script(),
                                 sequence: 4294967295
                             }));
                 });
@@ -123,7 +123,7 @@ define(["jquery"], function($) {
 
 
 
-        MockWallet.prototype.sendTx(tx, cb) {
+        MockWallet.prototype.sendTx = function(tx, cb) {
             var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
             return this.exit.call("txSend", {tx:txBase64}, cb || function(){});
         }

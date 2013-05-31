@@ -18,22 +18,23 @@ define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade
         }
 
         function p2pgui(wm, cm, exit) {
-            comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
+            comm = new HTTPExchangeComm('http://webcoinx.tumak.cz/messages');
             epa = new ExchangePeerAgent(new MockWallet(wm, cm, exit), comm);
             comm.addAgent(epa);
             window.setInterval(function() {
                     comm.update();
                     updateGUIstate();
                 }, 2000);
+            var self = this;
 
             $('#buy-button').click(function(event) {
                     event.preventDefault();
                     epa.registerMyOffer(
                         new ExchangeOffer(null, {
-                                colorid: color1,
+                                colorid: false,
                                 value: 11
                             }, {
-                                colorid: color2,
+                                colorid: self.colorid,
                                 value: 22
                             }, true));
                 });
@@ -42,16 +43,19 @@ define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade
                     event.preventDefault();
                     epa.registerMyOffer(
                         new ExchangeOffer(null, {
-                                colorid: color2,
+                                colorid: self.colorid,
                                 value: 22
                             }, {
-                                colorid: color1,
+                                colorid: false,
                                 value: 11
                             }, true));
                 });
         }
 
-        console.log(p2pgui);
+        p2pgui.prototype.setCurrentColor = function(colorid) {
+        	this.colorid = colorid;
+        }
+
         return p2pgui;
 
     });
