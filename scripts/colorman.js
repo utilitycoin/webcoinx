@@ -209,6 +209,10 @@ define(function () {
     var helper = new Helper(txHash, outputIdx, callback);
   }
 
+    ColorMan.prototype.getColor = function (txHash, outputIdx, callback) {
+      return getColor(txHash, outputIdx, callback);
+    };
+
     // XXX do in-client issuing
     // we always assume txhash:0, caller must ensure that
     ColorMan.prototype.issue = function(colordefs, name, unit, txhash, cb) {
