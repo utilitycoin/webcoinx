@@ -171,21 +171,24 @@ $(function () {
         return color!=''?(color+'@'+addr):addr;
     }
 
-	function updateBalance() {
-		var color = getColor(); // '' = BTC
-		v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
-                if (color) {
-                	// btc2color prevents rounding errors
-			v = colorMan.btc2color(v,color);
-//                	autoNumericColor.aSign = getColorName() + ' ';
-//			autoNumericColor.vMax = ''+v;
-			console.log(autoNumericColor);
-		}
-		$('#wallet_active .balance .value').text(v);
-        $('#colorind').text(getColorName());
- 		var addr = wallet.getCurAddress().toString();
-		$('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
-	}
+        function updateBalance() {
+            
+            var color = getColor(); // '' = BTC
+            pgui.setCurrentColor(color);
+            var v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
+            if (color) {
+                // btc2color prevents rounding errors
+                v = colorMan.btc2color(v,color);
+                //                      autoNumericColor.aSign = getColorName() + ' ';
+                //                      autoNumericColor.vMax = ''+v;
+                console.log(autoNumericColor);
+            }
+            $('#wallet_active .balance .value').text(v);
+
+            $('#colorind').text(getColorName());
+            var addr = wallet.getCurAddress().toString();
+            $('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
+        }
 
 	$('#color_selector').change(function() {
 		updateBalance();
