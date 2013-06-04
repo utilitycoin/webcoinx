@@ -9,6 +9,8 @@ define(["jquery"], function($) {
             this.my = data.my;
             this.known_outs = data.known_outs;
             this.realtx = null;
+            // mapping hash:idx => utxo
+            this.ops2utxo = {}
         }
 
 
@@ -67,7 +69,7 @@ define(["jquery"], function($) {
             for (var i = 0; i < this.tx.inp.length; i++) {
                 var inp = this.tx.inp[i];
                 if (my.indexOf(inp.outpoint_s) >= 0) {
-                    var utxo = real.ins[i].utxo;
+                    var utxo = this.ops2utxo[real.ins[i].outpoint_s];
                     if (!utxo)
                         throw "missing utxo for outpoint";
                     var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
@@ -76,12 +78,12 @@ define(["jquery"], function($) {
                     sig.push(parseInt(hashType, 10));
                     var pk = real.getPubKeyFromHash(pkhash);
 
-                    inp.signed = {
+                    inp.sig = {
                         sig: sig,
                         pk: pk
                     };                    
                 }
-                real.ins[i].script = Script.createInputScript(inp.signed.sig, inp.signed.pk);
+                real.ins[i].script = Script.createInputScript(inp.sig.sig, inp.sig.pk);
             }
 
             return true;
@@ -96,7 +98,7 @@ define(["jquery"], function($) {
         MockExchangeTransaction.prototype.hasEnoughSignatures = function() {
             var ok = true;
             this.tx.inp.forEach(function(inp) {
-                    if (!inp.signed)
+                    if (!inp.sig)
                         ok = false;
                 });
             return ok;
@@ -162,12 +164,14 @@ define(["jquery"], function($) {
             var payment = this.selectCoins(amount, color);
             if (payment) {
                 var outpoints = [];
+
                 var ins = payment.utxos.map(function (out) {
                                                 var outpoint_s = out.tx.hash + ":" out.index; // for export and indexOf lookup
+                                                outpoints.push(outpoints_s);
+                                                self.ops2utxo[outpoint_s] = out;
                                                 return {
                                                     outpoint_s: outpoint_s,
-                                                    utxo: out // for signing and realtx
-                                                    sig: null
+                                                    sig: false
                                                     // not signed by us/counterparty yet
                                                     // note that we do not transfer scripts over the wire, just the signature
                                                     // and pk itself. this saves us the trouble of verifying the counterparty
@@ -189,9 +193,10 @@ define(["jquery"], function($) {
 
                 return new MockExchangeTransaction(this, 
                                                    {
-                                                       tx: {outs: outs, ins: ins },
-                                                       my: payment.outs,
-                                                       known_outs: payment.outs
+                                                       // beware everything in tx: must be wire serializable
+                                                       tx: {outs: outs, ins: ins }, 
+                                                       my: outpoints,
+                                                       known_outs: outpoints
                                                    });
             } else 
                 throw "not enough coins";
