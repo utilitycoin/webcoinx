@@ -38,10 +38,11 @@ define(["jquery"], function($) {
 
             // inputs
             this.tx.inp.forEach(function(inp) {
+                    var op = inp.outpoint_s.split(':');
                     realtx.ins.push(new TransactionIn({
                                 outpoint: {
-                                    hash: out.tx.hash,
-                                    index: out.index,
+                                    hash: op[0],
+                                    index: op[1],
                                 }
                                 script: new Bitcoin.Script(),
                                 sequence: 4294967295
@@ -51,8 +52,8 @@ define(["jquery"], function($) {
             // outputs
             this.tx.out.forEach(function(out) {
                     realtx.outs.push(new TransactionOut({
-                                value: BigInteger.valueOf(out.value), // XXX fp
-                                script: Script.createOutputScript(address)
+                                value: out.value,
+                                script: Script.createOutputScript(out.to)
                             }));
                 });
             this.realtx = realtx;
@@ -160,10 +161,10 @@ define(["jquery"], function($) {
             return this.wallet.getCurAddress().toString();
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
-            amount = BigInteger.valueOf(amount);
-            var payment = this.selectCoins(amount, color);
+            var payment = this.collectMyUTXOs(amount, color);
             if (payment) {
                 var outpoints = [];
+                var self = this;
 
                 var ins = payment.utxos.map(function (out) {
                                                 var outpoint_s = out.tx.hash + ":" out.index; // for export and indexOf lookup
@@ -194,7 +195,7 @@ define(["jquery"], function($) {
                 return new MockExchangeTransaction(this, 
                                                    {
                                                        // beware everything in tx: must be wire serializable
-                                                       tx: {outs: outs, ins: ins }, 
+                                                       tx: {out: outs, inp: ins }, 
                                                        my: outpoints,
                                                        known_outs: outpoints
                                                    });
