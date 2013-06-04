@@ -7,11 +7,12 @@ define(["jquery"], function($) {
             this.wallet = wallet;
             this.tx = data.tx;
             this.my = data.my;
+            this.known_outs = data.known_outs;
             this.realtx = null;
         }
 
 
-        MockExchangeTransaction.prototype.fetchOutputColors = function(next) {
+        MockExchangeTransaction.prototype.fetchSupportingTxs = function(next) {
             // XXX TODO: use colorman on all outputs we don't know, and after colors are known
             // call next
             next();
@@ -52,7 +53,7 @@ define(["jquery"], function($) {
             this.realtx = realtx;
 
             return realtx;
-        }
+        };
 
 
         MockExchangeTransaction.prototype.signMyInputs = function(reftx) {
@@ -134,54 +135,42 @@ define(["jquery"], function($) {
         // false - btc
         // undefined/null - we're not sure (waiting for colorman)
 
-        // returns { list: [ "txhash:id" , "txhash:id" ... ], total: sum_of_utxos }
-        MockWallet.prototype.collectMyUTXOs = function(colorid) {
-            var w = this.wallet;
-            var res = [];
-            var val = 0;
-
-            for (var i = 0; i < w.unspentOuts.length; i++) {
-                if (!w.isGoodColor(i, colorid)) continue;
-                var utxo = w.unspentOuts[i];
-                res.push(utxo.tx.hash + ":" + utxo.index);
-                val += utxo.tx.value;
-            }
-            return { list: res, total: val };
-        };
-
 
         MockWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
-            var utxos = this.collectMyUTXOs(color, amount);
-            var t = new MockExchangeTransaction(this, {
-                tx: {
-                    inp: utxos.list.forEach(function(utxo) {
-                        return {
-                            outpoint: utxo.outpoint,
-                            utxo: utxo,
-                            signed: false
-                        };
-                    }),
-                    out: [{
-                            to: to_address,
-                            value: amount,
-                            color: color
-                        }
-                    ]
-                },
-                my: outpoints
-            });
-            // if the total is larger, append sending change back
-            if (utxos.total > amount) {
-                t.tx.out.push({
-                        to: this.getAddress(),
-                        value: utxos.total - amount
-                    });
-                t.realtx = null;
-            }
-            return t;
+            amount = BigInteger.valueOf(amount);
+            var payment = this.wallet.selectCoins(amount, color); //TODO: BigInteger?
+            if (payment) {
+                var ins = payment.outs.map(function (out) {
+                                              return {
+                                                  outpoint: {
+                                                      hash: out.tx.hash,
+                                                      index: out.index
+                                                  },
+                                                  script: null
+                                              };
+                                           });
+                var outs = [{to: to_address, // TODO: replace with script?
+                             value: amount.toString(),
+                             color: color // TODO: not needed?
+                            }];
+                if (payment.value.compareTo(amount)>0) {
+                    outs.push({
+                                 to: this.getAddress(color, true),
+                                 value: payment.value.subtract(amount).toString()
+                             });
+                }
+
+                return new MockExchangeTransaction(this, 
+                                                   {
+                                                       tx: {outs: outs, ins: ins },
+                                                       my: payment.outs,
+                                                       known_outs: payment.outs
+                                                   });
+            } else 
+                throw "not enough coins";
         };
         MockWallet.prototype.importTx = function(tx_data) {
             return new MockExchangeTransaction(this, {
