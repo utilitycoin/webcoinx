@@ -37,7 +37,10 @@ define(["jquery"], function($) {
             // inputs
             this.tx.inp.forEach(function(inp) {
                     realtx.ins.push(new TransactionIn({
-                                outpoint: inp.outpoint,
+                                outpoint: {
+                                    hash: out.tx.hash,
+                                    index: out.index,
+                                }
                                 script: new Bitcoin.Script(),
                                 sequence: 4294967295
                             }));
@@ -63,7 +66,7 @@ define(["jquery"], function($) {
 
             for (var i = 0; i < this.tx.inp.length; i++) {
                 var inp = this.tx.inp[i];
-                if (my.indexOf(inp.outpoint) >= 0) {
+                if (my.indexOf(inp.outpoint_s) >= 0) {
                     var utxo = real.ins[i].utxo;
                     if (!utxo)
                         throw "missing utxo for outpoint";
@@ -134,6 +137,21 @@ define(["jquery"], function($) {
         // "c010...." - colorid
         // false - btc
         // undefined/null - we're not sure (waiting for colorman)
+        // returns { utxos: [ utxo, utxo ... ], value: sum_of_utxos }
+        //
+        // XXX: move this to bitcoinjs-lib later, but for now let's confine necessary changes to this file
+        MockWallet.prototype.collectMyUTXOs = function(colorid) {
+            var w = this.wallet;
+            var res = [];
+            var val = BigInteger.ZERO;
+
+            for (var i = 0; i < w.unspentOuts.length; i++) {
+                if (!w.isGoodColor(i, colorid)) continue;
+                res.push(w.unspentOuts[i]);
+                val = val.add(utxo.tx.value);
+            }
+            return { utxos: res, value: val };
+        };
 
 
         MockWallet.prototype.getAddress = function(colorid, is_change) {
@@ -141,18 +159,24 @@ define(["jquery"], function($) {
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
             amount = BigInteger.valueOf(amount);
-            var payment = this.wallet.selectCoins(amount, color); //TODO: BigInteger?
+            var payment = this.selectCoins(amount, color);
             if (payment) {
-                var ins = payment.outs.map(function (out) {
-                                              return {
-                                                  outpoint: {
-                                                      hash: out.tx.hash,
-                                                      index: out.index
-                                                  },
-                                                  script: null
+                var outpoints = [];
+                var ins = payment.utxos.map(function (out) {
+                                                var outpoint_s = out.tx.hash + ":" out.index; // for export and indexOf lookup
+                                                return {
+                                                    outpoint_s: outpoint_s,
+                                                    utxo: out // for signing and realtx
+                                                    sig: null
+                                                    // not signed by us/counterparty yet
+                                                    // note that we do not transfer scripts over the wire, just the signature
+                                                    // and pk itself. this saves us the trouble of verifying the counterparty
+                                                    // sent us proper script, since we recreate it by ourselves should we
+                                                    // worry about that in the future.
+                                                }
                                               };
                                            });
-                var outs = [{to: to_address, // TODO: replace with script?
+                var outs = [{to: to_address, // TODO: replace with script? nope, realtx does scripts
                              value: amount.toString(),
                              color: color // TODO: not needed?
                             }];
