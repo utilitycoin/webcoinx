@@ -139,12 +139,12 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
             var self = this;
             if (this.hasActiveEP()) {
                 if (ep.pid == this.active_ep.pid)
-                    ep.etx.fetchSupportingTxs(function() {
+                    ep.etx.withInputColors(function() {
                             self.updateExchangeProposal(ep);
                         });
             } else {
                 if (this.my_offers[ep.offer.oid])
-                    ep.etx.fetchSupportingTxs(function() {
+                    ep.etx.withInputColors(function() {
                             self.acceptExchangeProposal(ep);
                         });
             }

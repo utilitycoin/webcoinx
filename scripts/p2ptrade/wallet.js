@@ -1,25 +1,60 @@
-define(["jquery"], function($) {
+define(
+    ["jquery", "colorman"], 
+    function($, ColorMan)  {
+
         function log_event(ekind, msg) {
             console.log("Event: " + ekind + " Msg:" + msg);
+        }
+        
+        function outpointString(outpoint) {
+            return outpoint.hash + ":" + outpoint.index.toString();
         }
 
         function MockExchangeTransaction(wallet, data) {
             this.wallet = wallet;
             this.tx = data.tx;
             this.my = data.my;
-            this.known_outs = data.known_outs;
+            this.inp_colors = data.inp_colors || {};
             this.realtx = null;
         }
 
+        MockExchangeTransaction.prototype.withInputColors = function(next) {
+            var self = this;
 
-        MockExchangeTransaction.prototype.fetchSupportingTxs = function(next) {
-            // XXX TODO: use colorman on all outputs we don't know, and after colors are known
-            // call next
-            next();
+            var todo = 1;
+            
+            function process (inp, txdata, color) {
+                self.inp_colors[outpointString(inp.outpoint)] = {
+                    color: color,
+                    value: txdata.out[inp.outpoint.index].value
+                };
+                todo -= 1;
+                if (todo == 0) next();
+            }
+            
+            this.tx.ins.forEach(
+                function (inp) {
+                    if (!self.inp_colors[outpointString(inp.outpoint)]) {
+                        todo += 1;
+                        ColorMan.instance.getTransaction(
+                            inp.outpoint.hash, 
+                            function (txdata) {
+                                ColorMan.instance.getColor(
+                                    inp.outpoint.hash,
+                                    inp.outpoint.index,
+                                    function (color) {
+                                        process(inp, txdata, color);
+                                    });
+                            });
+                    }
+                });
+
+            todo -= 1;
+            if (todo == 0) next();
         };
         MockExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
             var total = 0;
-            this.tx.out.forEach(function(out) {
+            this.tx.outs.forEach(function(out) {
                     if (out.to == myaddress/* && out.color == color*/) // XXX uncomment when fetchOutputColors works
                         total += out.value;
                 });
@@ -35,16 +70,17 @@ define(["jquery"], function($) {
             var realtx = new Bitcoin.Transaction();
 
             // inputs
-            this.tx.inp.forEach(function(inp) {
+            this.tx.ins.forEach(
+                function(inp) {
                     realtx.ins.push(new TransactionIn({
-                                outpoint: inp.outpoint,
-                                script: new Bitcoin.Script(),
-                                sequence: 4294967295
-                            }));
+                                                          outpoint: inp.outpoint,
+                                                          script: new Bitcoin.Script(),
+                                                          sequence: 4294967295
+                                                      }));
                 });
-
+            
             // outputs
-            this.tx.out.forEach(function(out) {
+            this.tx.outs.forEach(function(out) {
                     realtx.outs.push(new TransactionOut({
                                 value: BigInteger.valueOf(out.value), // XXX fp
                                 script: Script.createOutputScript(address)
@@ -100,8 +136,8 @@ define(["jquery"], function($) {
         };
         MockExchangeTransaction.prototype.appendTx = function(etx) {
             // TODO: handle colors?
-            this.tx.inp = this.tx.inp.concat(etx.tx.inp);
-            this.tx.out = this.tx.out.concat(etx.tx.out);
+            this.tx.ins = this.tx.inp.concat(etx.tx.ins);
+            this.tx.outs = this.tx.out.concat(etx.tx.outs);
             this.my = this.my.concat(etx.my);
             // invalidate realtx cache
             this.realtx = null;
@@ -162,12 +198,19 @@ define(["jquery"], function($) {
                                  value: payment.value.subtract(amount).toString()
                              });
                 }
-
+                var inp_colors = {};
+                payment.outs.forEach(
+                    function (out) {
+                        inp_colors[outpointString({hash: out.tx.hash, index: out.index})] = {
+                            color:  out.color,
+                            value:  out.tx.outs[out.index].value
+                        };
+                    });
                 return new MockExchangeTransaction(this, 
                                                    {
                                                        tx: {outs: outs, ins: ins },
                                                        my: payment.outs,
-                                                       known_outs: payment.outs
+                                                       inp_colors: inp_colors
                                                    });
             } else 
                 throw "not enough coins";
