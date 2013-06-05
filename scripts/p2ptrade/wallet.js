@@ -82,8 +82,8 @@ define(
             // outputs
             this.tx.outs.forEach(function(out) {
                     realtx.outs.push(new TransactionOut({
-                                value: BigInteger.valueOf(out.value), // XXX fp
-                                script: Script.createOutputScript(address)
+                                value: out.value,
+                                script: Script.createOutputScript(out.to)
                             }));
                 });
             this.realtx = realtx;
@@ -99,8 +99,8 @@ define(
 
             for (var i = 0; i < this.tx.inp.length; i++) {
                 var inp = this.tx.inp[i];
-                if (my.indexOf(inp.outpoint) >= 0) {
-                    var utxo = real.ins[i].utxo;
+                if (my.indexOf(inp.outpoint_s) >= 0) {
+                    var utxo = this.ops2utxo[real.ins[i].outpoint_s];
                     if (!utxo)
                         throw "missing utxo for outpoint";
                     var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
@@ -109,12 +109,12 @@ define(
                     sig.push(parseInt(hashType, 10));
                     var pk = real.getPubKeyFromHash(pkhash);
 
-                    inp.signed = {
+                    inp.sig = {
                         sig: sig,
                         pk: pk
                     };                    
                 }
-                real.ins[i].script = Script.createInputScript(inp.signed.sig, inp.signed.pk);
+                real.ins[i].script = Script.createInputScript(inp.sig.sig, inp.sig.pk);
             }
 
             return true;
@@ -129,7 +129,7 @@ define(
         MockExchangeTransaction.prototype.hasEnoughSignatures = function() {
             var ok = true;
             this.tx.inp.forEach(function(inp) {
-                    if (!inp.signed)
+                    if (!inp.sig)
                         ok = false;
                 });
             return ok;
@@ -170,6 +170,21 @@ define(
         // "c010...." - colorid
         // false - btc
         // undefined/null - we're not sure (waiting for colorman)
+        // returns { utxos: [ utxo, utxo ... ], value: sum_of_utxos }
+        //
+        // XXX: move this to bitcoinjs-lib later, but for now let's confine necessary changes to this file
+        MockWallet.prototype.collectMyUTXOs = function(colorid) {
+            var w = this.wallet;
+            var res = [];
+            var val = BigInteger.ZERO;
+
+            for (var i = 0; i < w.unspentOuts.length; i++) {
+                if (!w.isGoodColor(i, colorid)) continue;
+                res.push(w.unspentOuts[i]);
+                val = val.add(utxo.tx.value);
+            }
+            return { utxos: res, value: val };
+        };
 
 
         MockWallet.prototype.getAddress = function(colorid, is_change) {
