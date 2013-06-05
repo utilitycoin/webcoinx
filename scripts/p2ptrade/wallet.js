@@ -190,7 +190,6 @@ define(
             this.exit = exit;
             this.wm = wm;
             this.cm = cm;
-            this.exit = exit;
         }
 
 
@@ -216,7 +215,10 @@ define(
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
             amount = BigInteger.valueOf(amount);
-            var payment = this.wallet.selectCoins(amount, color);
+            var fee = (color === false) ? BigInteger.valueOf(50000) : BigInteger.ZERO;
+            var amountWithFee = amount.add(fee);
+
+            var payment = this.wallet.selectCoins(amountWithFee, color);
             if (payment) {
                 var ins = payment.outs.map(function (out) {
                                               return {
@@ -236,10 +238,10 @@ define(
                              value: amount.toString(),
                              color: color // TODO: not needed?
                             }];
-                if (payment.value.compareTo(amount)>0) {
+                if (payment.value.compareTo(amountWithFee)>0) {
                     outs.push({
                                  to: this.getAddress(color, true),
-                                 value: payment.value.subtract(amount).toString()
+                                 value: payment.value.subtract(amountWithFee).toString()
                              });
                 }
                 var inp_colors = {};

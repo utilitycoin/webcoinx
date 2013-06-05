@@ -92,7 +92,7 @@ $(function () {
 	var colordefServers = cfg.get('colordefServers');
     var colorMan = new ColorMan(exitNode);
 	var txView = new TransactionView($('#main_tx_list'), colorMan);
-	var pgui = new p2pgui(wm,colorMan);
+	var pgui = new p2pgui(wm,colorMan, exitNode);
 
   $('#exitnode_status').text(exitNodeHost);
 
