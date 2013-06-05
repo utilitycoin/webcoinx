@@ -72,7 +72,7 @@ define(
             // inputs
             this.tx.ins.forEach(
                 function(inp) {
-                    realtx.ins.push(new TransactionIn({
+                    realtx.ins.push(new Bitcoin.TransactionIn({
                                                           outpoint: inp.outpoint,
                                                           script: new Bitcoin.Script(),
                                                           sequence: 4294967295
@@ -81,9 +81,9 @@ define(
             
             // outputs
             this.tx.outs.forEach(function(out) {
-                    realtx.outs.push(new TransactionOut({
+                    realtx.outs.push(new Bitcoin.TransactionOut({
                                 value: out.value,
-                                script: Script.createOutputScript(out.to)
+                                script: Bitcoin.Script.createOutputScript(out.to)
                             }));
                 });
             this.realtx = realtx;
@@ -94,27 +94,38 @@ define(
 
         MockExchangeTransaction.prototype.signMyInputs = function(reftx) {
             var my = reftx ? reftx.my : this.my;
+            var self = this;
 
             var real = this.getRealTx();
 
-            for (var i = 0; i < this.tx.inp.length; i++) {
-                var inp = this.tx.inp[i];
-                if (my.indexOf(inp.outpoint_s) >= 0) {
-                    var utxo = this.ops2utxo[real.ins[i].outpoint_s];
-                    if (!utxo)
-                        throw "missing utxo for outpoint";
-                    var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
-                    var pkhash = utxo.out.script.simpleOutPubKeyHash();
-                    var sig = this.signWithKey(pkhash, hash);
-                    sig.push(parseInt(hashType, 10));
-                    var pk = real.getPubKeyFromHash(pkhash);
-
-                    inp.sig = {
-                        sig: sig,
-                        pk: pk
-                    };                    
+            // create signautures for my inputs
+            for (var j = 0; j < my.length; j++) {
+                var found = false;
+                var utxo = my[j];
+                for (var i = 0; i < this.tx.ins.length; i++) {
+                    var inp = this.tx.ins[i];
+                    if (inp.outpoint.hash == utxo.tx.hash && inp.outpoint.index == utxo.index) {
+                        var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
+                        var pkhash = utxo.out.script.simpleOutPubKeyHash();
+                        var sig = this.signWithKey(pkhash, hash);
+                        sig.push(parseInt(hashType, 10));
+                        var pk = real.getPubKeyFromHash(pkhash);
+                        
+                        inp.sig = {
+                            sig: sig,
+                            pk: pk
+                        };    
+                        found = true;
+                        break;
+                    }
                 }
-                real.ins[i].script = Script.createInputScript(inp.sig.sig, inp.sig.pk);
+                if (!found) throw "my input isn't present in transaction";
+            }
+
+            // now create signatures in real tx
+            for (var i = 0; i < this.tx.ins.length; i++) {
+                var inp = this.tx.ins[i];
+                real.ins[i].script = Bitcoin.Script.createInputScript(inp.sig.sig, inp.sig.pk);
             }
 
             return true;
@@ -128,7 +139,7 @@ define(
         };
         MockExchangeTransaction.prototype.hasEnoughSignatures = function() {
             var ok = true;
-            this.tx.inp.forEach(function(inp) {
+            this.tx.ins.forEach(function(inp) {
                     if (!inp.sig)
                         ok = false;
                 });
@@ -136,8 +147,8 @@ define(
         };
         MockExchangeTransaction.prototype.appendTx = function(etx) {
             // TODO: handle colors?
-            this.tx.ins = this.tx.inp.concat(etx.tx.ins);
-            this.tx.outs = this.tx.out.concat(etx.tx.outs);
+            this.tx.ins = this.tx.ins.concat(etx.tx.ins);
+            this.tx.outs = this.tx.outs.concat(etx.tx.outs);
             this.my = this.my.concat(etx.my);
             // invalidate realtx cache
             this.realtx = null;
@@ -150,14 +161,33 @@ define(
             // here we go again :(
             var self = this;
             $(wm).bind('walletInit', function(e) {
-                    self.wallet = e.newWallet.wallet;
-                });
+                           self.wallet = e.newWallet.wallet;
+                           // TODO: remove once selectCoins is moved to bitcoinjs-lib
+                           self.wallet.selectCoins = function (rqValue, color) {
+                               var selectedOuts = [];
+                               var selectedValue = BigInteger.ZERO;
+                               var i;
+                               for (i = 0; i < this.unspentOuts.length; i++) {
+                                   if (!this.isGoodColor(i, color)) continue;
+                                   selectedOuts.push(this.unspentOuts[i]);
+                                   selectedValue = selectedValue.add(Bitcoin.Util.valueToBigInt(this.unspentOuts[i].out.value));
+                                   
+                                   if (selectedValue.compareTo(rqValue) >= 0) break;
+                               }
+                               if (selectedValue.compareTo(rqValue) < 0) 
+                                   return null;
+                               else 
+                                   return {
+                                       outs: selectedOuts,
+                                       value: selectedValue
+                                   };
+                           };
+                       });
             this.exit = exit;
             this.wm = wm;
             this.cm = cm;
             this.exit = exit;
         }
-
 
 
         MockWallet.prototype.sendTx = function (tx, cb) {
@@ -170,29 +200,13 @@ define(
         // "c010...." - colorid
         // false - btc
         // undefined/null - we're not sure (waiting for colorman)
-        // returns { utxos: [ utxo, utxo ... ], value: sum_of_utxos }
-        //
-        // XXX: move this to bitcoinjs-lib later, but for now let's confine necessary changes to this file
-        MockWallet.prototype.collectMyUTXOs = function(colorid) {
-            var w = this.wallet;
-            var res = [];
-            var val = BigInteger.ZERO;
-
-            for (var i = 0; i < w.unspentOuts.length; i++) {
-                if (!w.isGoodColor(i, colorid)) continue;
-                res.push(w.unspentOuts[i]);
-                val = val.add(utxo.tx.value);
-            }
-            return { utxos: res, value: val };
-        };
-
 
         MockWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
             amount = BigInteger.valueOf(amount);
-            var payment = this.wallet.selectCoins(amount, color); //TODO: BigInteger?
+            var payment = this.wallet.selectCoins(amount, color);
             if (payment) {
                 var ins = payment.outs.map(function (out) {
                                               return {
@@ -200,10 +214,15 @@ define(
                                                       hash: out.tx.hash,
                                                       index: out.index
                                                   },
-                                                  script: null
+                                                  sig: false
+                                                  // not signed by us/counterparty yet
+                                                  // note that we do not transfer scripts over the wire, just the signature
+                                                  // and pk itself. this saves us the trouble of verifying the counterparty
+                                                  // sent us proper script, since we recreate it by ourselves should we
+                                                  // worry about that in the future.
                                               };
                                            });
-                var outs = [{to: to_address, // TODO: replace with script?
+                var outs = [{to: to_address, // TODO: replace with script? nope, realtx does scripts
                              value: amount.toString(),
                              color: color // TODO: not needed?
                             }];
@@ -223,6 +242,7 @@ define(
                     });
                 return new MockExchangeTransaction(this, 
                                                    {
+                                                       // beware everything in tx: must be wire serializable
                                                        tx: {outs: outs, ins: ins },
                                                        my: payment.outs,
                                                        inp_colors: inp_colors
