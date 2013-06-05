@@ -83,7 +83,9 @@ define(
             this.tx.outs.forEach(function(out) {
                     realtx.outs.push(new Bitcoin.TransactionOut({
                                 value: out.value,
-                                script: Bitcoin.Script.createOutputScript(out.to)
+                                script: Bitcoin.Script.createOutputScript(
+                                    new Bitcoin.Address(out.to)
+                                )
                             }));
                 });
             this.realtx = realtx;
