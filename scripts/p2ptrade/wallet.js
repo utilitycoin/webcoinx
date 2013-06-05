@@ -109,9 +109,10 @@ define(
                     if (inp.outpoint.hash == utxo.tx.hash && inp.outpoint.index == utxo.index) {
                         var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
                         var pkhash = utxo.out.script.simpleOutPubKeyHash();
-                        var sig = this.signWithKey(pkhash, hash);
+                        var sig = this.wallet.signWithKey(pkhash, hash);
+                        var hashType = 1; // SIGHASH_ALL
                         sig.push(parseInt(hashType, 10));
-                        var pk = real.getPubKeyFromHash(pkhash);
+                        var pk = this.wallet.getPubKeyFromHash(pkhash);
                         
                         inp.sig = {
                             sig: sig,
@@ -127,7 +128,8 @@ define(
             // now create signatures in real tx
             for (var i = 0; i < this.tx.ins.length; i++) {
                 var inp = this.tx.ins[i];
-                real.ins[i].script = Bitcoin.Script.createInputScript(inp.sig.sig, inp.sig.pk);
+                if (inp.sig)
+                    real.ins[i].script = Bitcoin.Script.createInputScript(inp.sig.sig, inp.sig.pk);
             }
 
             return true;
@@ -205,6 +207,12 @@ define(
 
         MockWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
+        };
+        MockWallet.prototype.signWithKey = function (pkhash, hash) {
+            return this.wallet.signWithKey(pkhash, hash);
+        };
+        MockWallet.prototype.getPubKeyFromHash = function (pkhash) {
+            return this.wallet.getPubKeyFromHash(pkhash);
         };
         MockWallet.prototype.createPayment = function(color, amount, to_address) {
             amount = BigInteger.valueOf(amount);
