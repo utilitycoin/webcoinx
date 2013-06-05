@@ -81,13 +81,16 @@ define(
             
             // outputs
             this.tx.outs.forEach(function(out) {
-                    realtx.outs.push(new Bitcoin.TransactionOut({
-                                value: out.value,
-                                script: Bitcoin.Script.createOutputScript(
-                                    new Bitcoin.Address(out.to)
-                                )
-                            }));
-                });
+                                     realtx.addOutput(new Bitcoin.Address(out.to),
+                                                      BigInteger.valueOf(out.value));
+                                     // there is a problem with endianness in bitcoinjs-lib :(
+                                     //  realtx.outs.push(new Bitcoin.TransactionOut({
+                                     //   value: out.value,
+                                     //   script: Bitcoin.Script.createOutputScript(
+                                     // 
+                                     //)
+                                 });
+
             this.realtx = realtx;
 
             return realtx;
@@ -194,7 +197,9 @@ define(
 
 
         MockWallet.prototype.sendTx = function (tx, cb) {
-            var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
+            var bytes = tx.serialize();
+            console.log(Crypto.util.bytesToHex(bytes));
+            var txBase64 = Crypto.util.bytesToBase64(bytes);
             return this.exit.call("txSend", {tx:txBase64}, cb || function(){});
         };
 
@@ -234,14 +239,13 @@ define(
                                                   // worry about that in the future.
                                               };
                                            });
-                var outs = [{to: to_address, // TODO: replace with script? nope, realtx does scripts
-                             value: amount.toString(),
-                             color: color // TODO: not needed?
+                var outs = [{to: to_address,
+                             value: amount.toString()
                             }];
                 if (payment.value.compareTo(amountWithFee)>0) {
                     outs.push({
-                                 to: this.getAddress(color, true),
-                                 value: payment.value.subtract(amountWithFee).toString()
+                                  to: this.getAddress(color, true),
+                                  value: payment.value.subtract(amountWithFee).toString()
                              });
                 }
                 var inp_colors = {};
