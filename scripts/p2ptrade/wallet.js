@@ -52,13 +52,58 @@ define(
             todo -= 1;
             if (todo == 0) next();
         };
+
+
+        MockExchangeTransaction.prototype.computeOutputColors = function () {
+            // initialize state
+            var cur_value = BigInteger.valueOf(0);
+            var cur_color = false;
+            var i = 0; //input index
+            var couts = [];
+            
+            for (var o = 0; o < this.tx.outs.length; ++o) {
+                var want_value = BigInteger.valueOf(parseInt(this.tx.outs[o].value, 10));
+                                
+                while ((cur_value.compareTo(want_value) < 0) && (i < this.tx.ins.length)) {
+                    var inp = this.tx.ins[i];
+                    var inpc = this.inp_colors[outpointString(inp.outpoint)];
+                    if (!inpc)
+                        throw "input color not known";
+ 
+                    if (cur_value.compareTo(BigInteger.ZERO) == 0) {
+                        cur_color = inpc.color;
+                    }
+                    else if (cur_color != inpc.color) {
+                        cur_color = false;
+                    }
+                    cur_value = cur_value.add(BigInteger.valueOf(parseInt(inpc.value, 10)));
+                    ++i;
+                }
+                
+                if (cur_value.compareTo(want_value) < 0)
+                    throw "tx wtf";
+                // color the output
+                couts.push({color: cur_color,
+                            to: this.tx.outs[o].to,
+                            orig: this.tx.outs[o],
+                            value: want_value});
+                cur_value = cur_value.subtract(want_value);
+            }
+            
+            return couts;
+        };
+
+
         MockExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
-            var total = 0;
-            this.tx.outs.forEach(function(out) {
-                    if (out.to == myaddress/* && out.color == color*/) // XXX uncomment when fetchOutputColors works
-                        total += out.value;
-                });
-            return (total >= value);
+            var couts = this.computeOutputColors();
+
+            var total = BigInteger.valueOf(0);
+
+            couts.forEach(function(cout) {
+                              if (cout.to == myaddress && cout.color == color)
+                                  total = total.add(cout.value);
+                          });
+            return (total.compareTo(BigInteger.valueOf(value)) >= 0);
         };
 
 
