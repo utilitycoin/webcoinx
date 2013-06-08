@@ -1,4 +1,5 @@
-define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade/wallet"], function($, HTTPExchangeComm, ExchangePeerAgent, ExchangeOffer, MockWallet) {
+define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade/wallet", "p2ptrade/mockwallet"], 
+       function($, HTTPExchangeComm, ExchangePeerAgent, ExchangeOffer, EWallet, MockWallet) {
 
         var comm1 = null;
         var epa1 = null;
@@ -19,13 +20,21 @@ define(["jquery", "p2ptrade/comm", "p2ptrade/agent", "p2ptrade/offer", "p2ptrade
             $("#status").text(text);
         }
 
-        function p2pgui(wm, cm, exit) {
+        function p2pgui(wm, cm, exit, cfg) {
+
+            var ewallet;
+            if (cfg.get('p2ptradeMockWallet', false) == true) {
+                ewallet = new MockWallet();
+            } else {
+                ewallet = new EWallet(wm, cm, exit);
+            }
+
             comm1 = new HTTPExchangeComm('http://webcoinx.tumak.cz/messages');
-            epa1 = new ExchangePeerAgent(new MockWallet(wm, cm, exit), comm1);
+            epa1 = new ExchangePeerAgent(ewallet, comm1);
             comm1.addAgent(epa1);
 
             comm2 = new HTTPExchangeComm('http://webcoinx.tumak.cz/messages');
-            epa2 = new ExchangePeerAgent(new MockWallet(wm, cm, exit), comm2);
+            epa2 = new ExchangePeerAgent(ewallet, comm2);
             comm2.addAgent(epa2);
 
             window.setInterval(function() {

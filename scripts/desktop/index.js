@@ -90,9 +90,9 @@ $(function () {
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
 	var colordefServers = cfg.get('colordefServers');
-    var colorMan = new ColorMan(exitNode);
+        var colorMan = new ColorMan(exitNode);
 	var txView = new TransactionView($('#main_tx_list'), colorMan);
-	var pgui = new p2pgui(wm,colorMan, exitNode);
+	var pgui = new p2pgui(wm,colorMan, exitNode, cfg);
 
   $('#exitnode_status').text(exitNodeHost);
 

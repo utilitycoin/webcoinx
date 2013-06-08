@@ -36,6 +36,7 @@ Settings.defaultSettings = {};
 Settings.globalDefaultSettings = {
 	// Currently, the minimum fee is 0.0005 BTC
 	fee: "0.0005",
+        p2ptradeMockWallet: false,
 
 	// By default we'll look for an exit node running on the same
 	// host as the web server.
