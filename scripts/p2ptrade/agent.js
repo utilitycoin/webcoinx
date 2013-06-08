@@ -21,6 +21,7 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
             this.comm = comm;
             this.match_offers = false;
             this.onCompleteTrade = function() {};
+            this.comm.addAgent(this);
         };
         ExchangePeerAgent.prototype.setActiveEP = function(ep) {
             this.active_ep = ep;

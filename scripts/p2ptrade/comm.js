@@ -60,7 +60,6 @@ define(["jquery"], function($) {
                     data: data,
                     dataType: 'json',
                     success: function(resp) {
-                        log_event("HTTPExchangeComm.pollAndDispatch", "got " + resp.length + " objects");
                         resp.forEach(function(x) {
                                 if (x.serial && x.serial > self.lastpoll)
                                     self.lastpoll = x.serial;

@@ -21,6 +21,9 @@ define(
             this.tx = data.tx;
             this.my = data.my;
         }
+        MockExchangeTransaction.prototype.withInputColors = function (next) {
+            next();  
+        };
          
         MockExchangeTransaction.prototype.checkOutputsToMe = function (myaddress, color, value) {
             var total = 0;
@@ -62,19 +65,11 @@ define(
             return this.tx;
         };
         
-        function MockWallet (wm) {
-	    // here we go again :(
-	    var self = this;
-	    $(wm).bind('walletInit', function(e) {
-			   console.log('wallet creep');
-        	           self.wallet = e.newWallet.wallet;
-			console.log(self.wallet);
-		       });
-	    this.wm = wm;
+        function MockWallet () {
             this.id = make_random_id();
         }
         MockWallet.prototype.getAddress = function (colorid, is_change) {
-	    return 'a_' + this.wallet.getCurAddress().toString();
+	    return 'a_' + make_random_id();
         };
         MockWallet.prototype.createPayment = function (color, amount, to_address) {
             var outpoint= "o_" + this.id + "_" + make_random_id();
