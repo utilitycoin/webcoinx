@@ -10,7 +10,7 @@ define(
             return outpoint.hash + ":" + outpoint.index.toString();
         }
 
-        function MockExchangeTransaction(wallet, data) {
+        function ExchangeTransaction(wallet, data) {
             this.wallet = wallet;
             this.tx = data.tx;
             this.my = data.my;
@@ -18,7 +18,7 @@ define(
             this.realtx = null;
         }
 
-        MockExchangeTransaction.prototype.withInputColors = function(next) {
+        ExchangeTransaction.prototype.withInputColors = function(next) {
             var self = this;
 
             var todo = 1;
@@ -54,7 +54,7 @@ define(
         };
 
 
-        MockExchangeTransaction.prototype.computeOutputColors = function () {
+        ExchangeTransaction.prototype.computeOutputColors = function () {
             // initialize state
             var cur_value = BigInteger.valueOf(0);
             var cur_color = false;
@@ -94,7 +94,7 @@ define(
         };
 
 
-        MockExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
+        ExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
             var couts = this.computeOutputColors();
 
             var total = BigInteger.valueOf(0);
@@ -108,7 +108,7 @@ define(
 
 
         // reconstruct tx so bitcoinjs-lib understands it
-        MockExchangeTransaction.prototype.getRealTx = function() {
+        ExchangeTransaction.prototype.getRealTx = function() {
             // cache
             if (this.realtx) return this.realtx;
 
@@ -142,7 +142,7 @@ define(
         };
 
 
-        MockExchangeTransaction.prototype.signMyInputs = function(reftx) {
+        ExchangeTransaction.prototype.signMyInputs = function(reftx) {
             var my = reftx ? reftx.my : this.my;
             var self = this;
 
@@ -182,14 +182,14 @@ define(
 
             return true;
         };
-        MockExchangeTransaction.prototype.broadcast = function(cb) {
-            log_event("MockExchangeTransaction.broadcast");
+        ExchangeTransaction.prototype.broadcast = function(cb) {
+            log_event("ExchangeTransaction.broadcast");
             if (!this.hasEnoughSignatures())
                 throw "trying to broadcast tx without enough signatures";
             this.wallet.sendTx(this.realtx, cb);
             return true;
         };
-        MockExchangeTransaction.prototype.hasEnoughSignatures = function() {
+        ExchangeTransaction.prototype.hasEnoughSignatures = function() {
             var ok = true;
             this.tx.ins.forEach(function(inp) {
                     if (!inp.sig)
@@ -197,7 +197,7 @@ define(
                 });
             return ok;
         };
-        MockExchangeTransaction.prototype.appendTx = function(etx) {
+        ExchangeTransaction.prototype.appendTx = function(etx) {
             // TODO: handle colors?
             this.tx.ins = this.tx.ins.concat(etx.tx.ins);
             this.tx.outs = this.tx.outs.concat(etx.tx.outs);
@@ -205,11 +205,11 @@ define(
             // invalidate realtx cache
             this.realtx = null;
         };
-        MockExchangeTransaction.prototype.getData = function() {
+        ExchangeTransaction.prototype.getData = function() {
             return this.tx;
         };
 
-        function MockWallet(wm,cm,exit) {
+        function EWallet(wm,cm,exit) {
             // here we go again :(
             var self = this;
             $(wm).bind('walletInit', function(e) {
@@ -241,7 +241,7 @@ define(
         }
 
 
-        MockWallet.prototype.sendTx = function (tx, cb) {
+        EWallet.prototype.sendTx = function (tx, cb) {
             var bytes = tx.serialize();
             console.log(Crypto.util.bytesToHex(bytes));
             var txBase64 = Crypto.util.bytesToBase64(bytes);
@@ -254,16 +254,16 @@ define(
         // false - btc
         // undefined/null - we're not sure (waiting for colorman)
 
-        MockWallet.prototype.getAddress = function(colorid, is_change) {
+        EWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
         };
-        MockWallet.prototype.signWithKey = function (pkhash, hash) {
+        EWallet.prototype.signWithKey = function (pkhash, hash) {
             return this.wallet.signWithKey(pkhash, hash);
         };
-        MockWallet.prototype.getPubKeyFromHash = function (pkhash) {
+        EWallet.prototype.getPubKeyFromHash = function (pkhash) {
             return this.wallet.getPubKeyFromHash(pkhash);
         };
-        MockWallet.prototype.createPayment = function(color, amount, to_address) {
+        EWallet.prototype.createPayment = function(color, amount, to_address) {
             amount = BigInteger.valueOf(amount);
             var fee = (color === false) ? BigInteger.valueOf(50000) : BigInteger.ZERO;
             var amountWithFee = amount.add(fee);
@@ -301,7 +301,7 @@ define(
                             value:  out.tx.outs[out.index].value
                         };
                     });
-                return new MockExchangeTransaction(this, 
+                return new ExchangeTransaction(this, 
                                                    {
                                                        // beware everything in tx: must be wire serializable
                                                        tx: {outs: outs, ins: ins },
@@ -311,12 +311,12 @@ define(
             } else 
                 throw "not enough coins";
         };
-        MockWallet.prototype.importTx = function(tx_data) {
-            return new MockExchangeTransaction(this, {
+        EWallet.prototype.importTx = function(tx_data) {
+            return new ExchangeTransaction(this, {
                 tx: tx_data,
                 my: []
             });
         };
 
-        return MockWallet;
+        return EWallet;
 });
