@@ -12,7 +12,7 @@ define(
             }
             this.ewallet = ewallet;
             
-            this.comm = new HTTPExchangeComm('http://webcoinx.tumak.cz/messages');
+            this.comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
             this.epa = new ExchangePeerAgent(ewallet, this.comm);
             var self = this;
 
@@ -30,7 +30,7 @@ define(
                                                                  value: "11",
                                                              }, {
                                                                  colorid: self.colorid,
-                                                                 value: "22",
+                                                                 value: "1",
                                                              }, true));
                                    });
 
@@ -39,7 +39,7 @@ define(
                                         self.epa.registerMyOffer(
                                             new ExchangeOffer(null, {
                                                                   colorid: self.colorid,
-                                                                  value: "22",
+                                                                  value: "1",
                                                               }, {
                                                                   colorid: false,
                                                                   value: "11",

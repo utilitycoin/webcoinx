@@ -5,9 +5,21 @@
 // false - btc
 // undefined/null - we're not sure (waiting for colorman)
 //
-// amounts are represented as string in api public api, internally
-// used only in ETX.tx.outs[n].value which gets exported by getData(),
-// otherwise bigint everywhere
+// amount representation is crazy:
+// "01234": satoshi amount as string, if that were everywhere things would be
+// awesome
+//
+// BigInt: that works esp for math
+//
+// Some weird bytearray: (but not bitcoin tx packed int!)
+// bitcoinjs insists on it (the endianness madness wrt addOutput below)
+//
+// We used to have js float on top of that, meh.
+// 
+// We try to have them represented as string in api public api, internally
+// used only as string in ETX.tx.outs[n].value which gets exported by getData(),
+// otherwise bigint everywhere and bytearray (Bitcoin.Util.valueToBigInt) where
+// bitcoinjs-lib insists on it. Talk about consistent!
 
 
 define(
@@ -38,7 +50,7 @@ define(
             function process (inp, txdata, color) {
                 self.inp_colors[outpointString(inp.outpoint)] = {
                     color: color,
-                    value: txdata.out[inp.outpoint.index].value
+                    value: new BigInteger(txdata.out[inp.outpoint.index].value)
                 };
                 todo -= 1;
                 if (todo == 0) next();
@@ -74,7 +86,8 @@ define(
             var couts = [];
             
             for (var o = 0; o < this.tx.outs.length; ++o) {
-                var want_value = new BigInteger(this.tx.outs[o].value, 10);
+                var vv = this.tx.outs[o].value;
+                var want_value = new BigInteger(vv, 10);
                                 
                 while ((cur_value.compareTo(want_value) < 0) && (i < this.tx.ins.length)) {
                     var inp = this.tx.ins[i];
@@ -234,7 +247,7 @@ define(
                                for (i = 0; i < this.unspentOuts.length; i++) {
                                    if (!this.isGoodColor(i, color)) continue;
                                    selectedOuts.push(this.unspentOuts[i]);
-                                   selectedValue = selectedValue.add(this.unspentOuts[i].out.value);
+                                   selectedValue = selectedValue.add(Bitcoin.Util.valueToBigInt(this.unspentOuts[i].out.value));
                                    
                                    if (selectedValue.compareTo(rqValue) >= 0) break;
                                }
@@ -307,7 +320,7 @@ define(
                     function (out) {
                         inp_colors[outpointString({hash: out.tx.hash, index: out.index})] = {
                             color:  out.color,
-                            value:  out.tx.outs[out.index].value // bigint
+                            value:  Bitcoin.Util.valueToBigInt(out.tx.outs[out.index].value)
                         };
                     });
                 return new ExchangeTransaction(this, 
