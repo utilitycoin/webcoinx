@@ -27,10 +27,10 @@ define(
                                        self.epa.registerMyOffer(
                                            new ExchangeOffer(null, {
                                                                  colorid: false,
-                                                                 value: 11
+                                                                 value: "11",
                                                              }, {
                                                                  colorid: self.colorid,
-                                                                 value: 22
+                                                                 value: "22",
                                                              }, true));
                                    });
 
@@ -39,10 +39,10 @@ define(
                                         self.epa.registerMyOffer(
                                             new ExchangeOffer(null, {
                                                                   colorid: self.colorid,
-                                                                  value: 22
+                                                                  value: "22",
                                                               }, {
                                                                   colorid: false,
-                                                                  value: 11
+                                                                  value: "11",
                                                               }, true));
                                     });
         }

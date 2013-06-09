@@ -1,3 +1,15 @@
+// impl notes:
+//
+// color representation everywhere:
+// "c010...." - colorid
+// false - btc
+// undefined/null - we're not sure (waiting for colorman)
+//
+// amounts are represented as string in api public api, internally
+// used only in ETX.tx.outs[n].value which gets exported by getData(),
+// otherwise bigint everywhere
+
+
 define(
     ["jquery", "colorman"], 
     function($, ColorMan)  {
@@ -62,7 +74,7 @@ define(
             var couts = [];
             
             for (var o = 0; o < this.tx.outs.length; ++o) {
-                var want_value = BigInteger.valueOf(parseInt(this.tx.outs[o].value, 10));
+                var want_value = new BigInteger(this.tx.outs[o].value, 10);
                                 
                 while ((cur_value.compareTo(want_value) < 0) && (i < this.tx.ins.length)) {
                     var inp = this.tx.ins[i];
@@ -76,7 +88,7 @@ define(
                     else if (cur_color != inpc.color) {
                         cur_color = false;
                     }
-                    cur_value = cur_value.add(BigInteger.valueOf(parseInt(inpc.value, 10)));
+                    cur_value = cur_value.add(inpc.value);
                     ++i;
                 }
                 
@@ -94,6 +106,7 @@ define(
         };
 
 
+        // expects 'value' as string
         ExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
             var couts = this.computeOutputColors();
 
@@ -103,7 +116,7 @@ define(
                               if (cout.to == myaddress && cout.color == color)
                                   total = total.add(cout.value);
                           });
-            return (total.compareTo(BigInteger.valueOf(value)) >= 0);
+            return (total.compareTo(new BigInteger(value, 10)) >= 0);
         };
 
 
@@ -127,7 +140,7 @@ define(
             // outputs
             this.tx.outs.forEach(function(out) {
                                      realtx.addOutput(new Bitcoin.Address(out.to),
-                                                      BigInteger.valueOf(out.value));
+                                                      new BigInteger(out.value, 10));
                                      // there is a problem with endianness in bitcoinjs-lib :(
                                      //  realtx.outs.push(new Bitcoin.TransactionOut({
                                      //   value: out.value,
@@ -158,8 +171,7 @@ define(
                         var hash = real.hashTransactionForSignature(utxo.out.script, i, 1); // SIGHASH_ALL
                         var pkhash = utxo.out.script.simpleOutPubKeyHash();
                         var sig = this.wallet.signWithKey(pkhash, hash);
-                        var hashType = 1; // SIGHASH_ALL
-                        sig.push(parseInt(hashType, 10));
+                        sig.push(1); // SIGHASH_ALL
                         var pk = this.wallet.getPubKeyFromHash(pkhash);
                         
                         inp.sig = {
@@ -222,7 +234,7 @@ define(
                                for (i = 0; i < this.unspentOuts.length; i++) {
                                    if (!this.isGoodColor(i, color)) continue;
                                    selectedOuts.push(this.unspentOuts[i]);
-                                   selectedValue = selectedValue.add(Bitcoin.Util.valueToBigInt(this.unspentOuts[i].out.value));
+                                   selectedValue = selectedValue.add(this.unspentOuts[i].out.value);
                                    
                                    if (selectedValue.compareTo(rqValue) >= 0) break;
                                }
@@ -249,11 +261,6 @@ define(
         };
 
 
-        // color representation everywhere:
-        // "c010...." - colorid
-        // false - btc
-        // undefined/null - we're not sure (waiting for colorman)
-
         EWallet.prototype.getAddress = function(colorid, is_change) {
             return this.wallet.getCurAddress().toString();
         };
@@ -263,8 +270,10 @@ define(
         EWallet.prototype.getPubKeyFromHash = function (pkhash) {
             return this.wallet.getPubKeyFromHash(pkhash);
         };
+
+        // expects 'amount' as string
         EWallet.prototype.createPayment = function(color, amount, to_address) {
-            amount = BigInteger.valueOf(amount);
+            amount = new BigInteger(amount, 10);
             var fee = (color === false) ? BigInteger.valueOf(50000) : BigInteger.ZERO;
             var amountWithFee = amount.add(fee);
 
@@ -298,7 +307,7 @@ define(
                     function (out) {
                         inp_colors[outpointString({hash: out.tx.hash, index: out.index})] = {
                             color:  out.color,
-                            value:  out.tx.outs[out.index].value
+                            value:  out.tx.outs[out.index].value // bigint
                         };
                     });
                 return new ExchangeTransaction(this, 
