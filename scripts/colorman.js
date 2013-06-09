@@ -24,6 +24,7 @@ define(function () {
 		alert("Error querying "+txHash+": " + err);
 		return;
 	}
+  fixData(data.tx);  
 	txdatacache[txHash] = data.tx;
 	callback(data.tx);
       });
@@ -181,7 +182,7 @@ define(function () {
 
             else {
 
-	      fixData(tx);
+
               var matching = matchInputs(tx);
 
 

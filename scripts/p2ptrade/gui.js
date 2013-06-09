@@ -27,10 +27,10 @@ define(
                                        self.epa.registerMyOffer(
                                            new ExchangeOffer(null, {
                                                                  colorid: false,
-                                                                 value: "11",
+                                                                 value: "20000", // is worth 20k satoshi
                                                              }, {
                                                                  colorid: self.colorid,
-                                                                 value: "1",
+                                                                 value: "10000", // 1 unit of color
                                                              }, true));
                                    });
 
@@ -39,10 +39,10 @@ define(
                                         self.epa.registerMyOffer(
                                             new ExchangeOffer(null, {
                                                                   colorid: self.colorid,
-                                                                  value: "1",
+                                                                  value: "10000", // 1 unit of color
                                                               }, {
                                                                   colorid: false,
-                                                                  value: "11",
+                                                                  value: "20000", // is worth 20k satoshi
                                                               }, true));
                                     });
         }

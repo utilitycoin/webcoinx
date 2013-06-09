@@ -48,9 +48,10 @@ define(
             var todo = 1;
             
             function process (inp, txdata, color) {
+
                 self.inp_colors[outpointString(inp.outpoint)] = {
                     color: color,
-                    value: new BigInteger(txdata.out[inp.outpoint.index].value)
+                    value: new BigInteger(txdata.out[inp.outpoint.index].value.toString(), 10)
                 };
                 todo -= 1;
                 if (todo == 0) next();
@@ -92,6 +93,7 @@ define(
                 while ((cur_value.compareTo(want_value) < 0) && (i < this.tx.ins.length)) {
                     var inp = this.tx.ins[i];
                     var inpc = this.inp_colors[outpointString(inp.outpoint)];
+
                     if (!inpc)
                         throw "input color not known";
  
@@ -105,8 +107,12 @@ define(
                     ++i;
                 }
                 
-                if (cur_value.compareTo(want_value) < 0)
-                    throw "tx wtf";
+                var wtf;
+                if ((wtf=cur_value.compareTo(want_value)) < 0) {
+                    console.log("wtf="+wtf+"have:"+(cur_value.toString())+" need:"+(want_value.toString()));
+                    console.log(this.tx);
+                    throw "tx wtf: "+wtf;
+                }
                 // color the output
                 couts.push({color: cur_color,
                             to: this.tx.outs[o].to,
@@ -247,6 +253,7 @@ define(
                                for (i = 0; i < this.unspentOuts.length; i++) {
                                    if (!this.isGoodColor(i, color)) continue;
                                    selectedOuts.push(this.unspentOuts[i]);
+
                                    selectedValue = selectedValue.add(Bitcoin.Util.valueToBigInt(this.unspentOuts[i].out.value));
                                    
                                    if (selectedValue.compareTo(rqValue) >= 0) break;
@@ -320,7 +327,7 @@ define(
                     function (out) {
                         inp_colors[outpointString({hash: out.tx.hash, index: out.index})] = {
                             color:  out.color,
-                            value:  Bitcoin.Util.valueToBigInt(out.tx.outs[out.index].value)
+                            value:  Bitcoin.Util.valueToBigInt(out.out.value)
                         };
                     });
                 return new ExchangeTransaction(this, 
