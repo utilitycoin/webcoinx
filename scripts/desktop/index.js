@@ -186,7 +186,7 @@ $(function () {
             }
             $('#wallet_active .balance .value').text(v);
 
-            $('#colorind').text(getColorName());
+            $('.colorind').text(getColorName());
             var addr = wallet.getCurAddress().toString();
             $('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
         }

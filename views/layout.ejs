@@ -50,7 +50,7 @@
 	<div id="wallet_active" style="display: none">
 	  <form>
 		<p>
-		  <label>Your <span id='colorind'>?</span> Address:</label>
+		  <label>Your <span class='colorind'>?</span> Address:</label>
 		  <input id="addr" class="text medium" readonly="readonly"/>
 		  <button class="new_addr">New&hellip;</button>
 
@@ -265,12 +265,12 @@
   <div class="row">
     <div class="span4">
       <div class="well well-small">
-        <h4>Buy TestTest1</h4>
+        <h4>Buy <span class='colorind'></span></h4>
         <form class="form-inline">
           <label class="control-label" for="quantity">Quantity (units)</label>
-          <input type="text" id="quantity" class="span2" value="" />
+          <input type="text" id="buyamt" class="span2" value="1" />
           <label class="control-label" for="price">Price (BTC/unit)</label>
-          <input type="text" id="price" class="span2" value="" />
+          <input type="text" id="buyprice" class="span2" value="0.001" />
           <p>Total BTC:</p>
           
           <button id="buy-button" class="btn btn-primary btn-block">Buy</button>
@@ -279,12 +279,12 @@
     </div>
     <div class="span4">
       <div class="well well-small">
-        <h4>Sell TestTest1</h4>
+        <h4>Sell <span class='colorind'></span></h4>
         <form class="form-inline">
           <label class="control-label" for="quantity">Quantity (units)</label>
-          <input type="text" id="quantity" class="span2" value="" />
+          <input type="text" id="sellamt" class="span2" value="1" />
           <label class="control-label" for="price">Price (BTC/unit)</label>
-          <input type="text" id="price" class="span2" value="" />
+          <input type="text" id="sellprice" class="span2" value="0.001" />
           <p>Total BTC:</p>
           
           <button id="sell-button" class="btn btn-primary btn-block">Sell</button>

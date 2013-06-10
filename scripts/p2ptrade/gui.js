@@ -24,34 +24,35 @@ define(
             $('#buy-button').click(function(event) {
             	event.preventDefault();
             	self.create_offer(
-                                 false, "20000", "1", // send
-                                 self.colorid, "1", self.unit
+                                 false, "1", $('#buyprice').val(),
+                                 self.colorid, self.unit, $('#buyamt').val()
                                  );
            	});
 
             $('#sell-button').click(function() {
                 event.preventDefault();
                 self.create_offer(
-                                  self.colorid, "1", self.unit, // send
-                                  false, "20000", "1"
+                                  self.colorid, self.unit, $('#sellamt').val(),
+                                  false, "1", $('#sellprice').val(), "1"
                                   );
             });
         }
 
 		// send refers to what we're sending to counterparty, recv what we want in return
+        // TBA: should API user (which gui is) ever worry about units?        
         p2pgui.prototype.create_offer = function(sendcolor, sendunit, sendamt, recvcolor, recvunit, recvamt) {
         	console.log("create_offer: send "+sendcolor+","+sendunit+","+sendamt);
         	console.log("create_offer: recv "+recvcolor+","+recvunit+","+recvamt);
-        	function conv(a,b) {
-        		// TBA: should API user (which gui is) ever worry about units?
+        	function conv(a,b,c) {
+                if (c===false) return Bitcoin.Util.parseValue(a,false).toString();
         		return (new BigInteger(a)).multiply(new BigInteger(b)).toString();
         	};
         	this.epa.registerMyOffer(new ExchangeOffer(null, {
         		colorid: sendcolor,
-        		value: conv(sendamt, sendunit)
+        		value: conv(sendamt, sendunit, sendcolor)
         	}, {
         		colorid: recvcolor,
-        		value: conv(recvamt, recvunit)
+        		value: conv(recvamt, recvunit, recvcolor)
         	}, true));
         };
 
