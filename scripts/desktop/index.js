@@ -90,9 +90,9 @@ $(function () {
 	var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                               txDb, txMem, txView);
 	var colordefServers = cfg.get('colordefServers');
-    var colorMan = new ColorMan(exitNode);
+        var colorMan = new ColorMan(exitNode);
 	var txView = new TransactionView($('#main_tx_list'), colorMan);
-	var pgui = new p2pgui(wm,colorMan);
+	var pgui = new p2pgui(wm,colorMan, exitNode, cfg);
 
   $('#exitnode_status').text(exitNodeHost);
 
@@ -171,21 +171,25 @@ $(function () {
         return color!=''?(color+'@'+addr):addr;
     }
 
-	function updateBalance() {
-		var color = getColor(); // '' = BTC
-		v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
-                if (color) {
-                	// btc2color prevents rounding errors
-			v = colorMan.btc2color(v,color);
-//                	autoNumericColor.aSign = getColorName() + ' ';
-//			autoNumericColor.vMax = ''+v;
-			console.log(autoNumericColor);
-		}
-		$('#wallet_active .balance .value').text(v);
-        $('#colorind').text(getColorName());
- 		var addr = wallet.getCurAddress().toString();
-		$('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
-	}
+        function updateBalance() {
+            
+            var color = getColor(); // '' = BTC
+            console.log('@@@@'+color);
+            pgui.setCurrentColor(color!=''?color:false, (color!='')?colorMan.cmap(color).unit.toString():"1");
+            var v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
+            if (color) {
+                // btc2color prevents rounding errors
+                v = colorMan.btc2color(v,color);
+                //                      autoNumericColor.aSign = getColorName() + ' ';
+                //                      autoNumericColor.vMax = ''+v;
+                console.log(autoNumericColor);
+            }
+            $('#wallet_active .balance .value').text(v);
+
+            $('#colorind').text(getColorName());
+            var addr = wallet.getCurAddress().toString();
+            $('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
+        }
 
 	$('#color_selector').change(function() {
 		updateBalance();

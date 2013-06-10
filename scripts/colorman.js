@@ -3,7 +3,8 @@ define(function () {
   var colorspace = null;
   var colormap = {false:false};
   var ColorMan = function (exitnode) {
-    exitNode = exitnode;
+      ColorMan.instance = this; // LOL singleton
+      exitNode = exitnode;
   };
 
   var txdatacache = {};
@@ -23,6 +24,7 @@ define(function () {
 		alert("Error querying "+txHash+": " + err);
 		return;
 	}
+  fixData(data.tx);  
 	txdatacache[txHash] = data.tx;
 	callback(data.tx);
       });
@@ -180,7 +182,7 @@ define(function () {
 
             else {
 
-	      fixData(tx);
+
               var matching = matchInputs(tx);
 
 
@@ -208,6 +210,15 @@ define(function () {
 
     var helper = new Helper(txHash, outputIdx, callback);
   }
+
+    ColorMan.prototype.getTransaction = function (txHash, callback) {
+        txHash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(txHash).reverse());
+        return getTransaction(txHash, callback);
+    };
+    ColorMan.prototype.getColor = function (txHash, outputIdx, callback) {
+        txHash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(txHash).reverse());
+        return getColor(txHash, outputIdx, callback);
+    };
 
     // XXX do in-client issuing
     // we always assume txhash:0, caller must ensure that
