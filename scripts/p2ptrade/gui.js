@@ -19,7 +19,7 @@ define(
             window.setInterval(function() {
                                    self.comm.update();
                                    self.updateGUIstate();
-                               }, 2000);
+                               }, 1000);
 
             $('#buy-button').click(function(event) {
             	event.preventDefault();

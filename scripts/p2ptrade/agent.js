@@ -101,8 +101,9 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
                         var success = false;
                         try {
                             this.makeExchangeProposal(their_offer, my_offer.A.address, my_offer.A.value, my_offer);
-                            success = true;
+                            success = true;// false = what about just hammering everyone? current state machine breaks :(
                         } catch (x) {
+                        	console.log(x);
                             log_event("error", "error in makeExchangeProposal called from matchOffers");
                         }
                         if (success) return;
@@ -142,6 +143,7 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
             if (this.hasActiveEP()) {
                 if (ep.pid == this.active_ep.pid)
                     ep.etx.withInputColors(function() {
+                    		console.log('update proposal');
                             self.updateExchangeProposal(ep);
                         });
             } else {
@@ -168,7 +170,7 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
             var acolor = resolveColor(offer.A.colorid);
             var bcolor = resolveColor(offer.B.colorid);
             if (!ep.checkOutputsToMe(offer.A.address, bcolor, offer.B.value))
-                throw "Proposed tx does not pay enough coins of the color I want to me";
+                throw "Proposed tx does not pay enough coins of the color I want to me 1";
             var p = this.wallet.createPayment(acolor, offer.A.value, offer.B.address);
             ep.addMyTranche(p);
             ep.signMyInputs(p);
@@ -193,11 +195,11 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
             var bcolor = resolveColor(offer.B.colorid);
             if (my_ep.state == 'proposed') {
                 if (!ep.checkOutputsToMe(offer.B.address, acolor, offer.A.value))
-                    throw "Proposed tx does not pay enough coins of the color I want to me";
+                    throw "Proposed tx does not pay enough coins of the color I want to me 2";
                 ep.signMyInputs(my_ep.etx);
             } else if (my_ep.state == 'accepted') {
                 if (!ep.checkOutputsToMe(offer.A.address, bcolor, offer.B.value))
-                    throw "Proposed tx does not pay enough coins of the color I want to me";
+                    throw "Proposed tx does not pay enough coins of the color I want to me 3";
                 // TODO: should we sign it again?
             } else throw "EP state is wrong in updateExchangeProposal";
 

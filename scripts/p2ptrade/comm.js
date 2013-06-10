@@ -24,8 +24,8 @@ define(["jquery"], function($) {
         }
 
 
-        HTTPExchangeComm.prototype.STANDARD_OFFER_EXPIRY_INTERVAL = 60;
-        HTTPExchangeComm.prototype.STANDARD_OFFER_VALIDITY_INTERVAL = 15;
+        HTTPExchangeComm.prototype.STANDARD_OFFER_EXPIRY_INTERVAL = 15;
+        HTTPExchangeComm.prototype.STANDARD_OFFER_VALIDITY_INTERVAL = 5;
 
 
 

@@ -127,6 +127,7 @@ define(
 
         // expects 'value' as string
         ExchangeTransaction.prototype.checkOutputsToMe = function(myaddress, color, value) {
+//            return true; // this seems to be just broken :(
             var couts = this.computeOutputColors();
 
             var total = BigInteger.valueOf(0);
@@ -217,7 +218,7 @@ define(
             log_event("ExchangeTransaction.broadcast");
             if (!this.hasEnoughSignatures())
                 throw "trying to broadcast tx without enough signatures";
-            this.wallet.sendTx(this.realtx, cb);
+            this.wallet.sendTx(this.getRealTx(), cb);
             return true;
         };
         ExchangeTransaction.prototype.hasEnoughSignatures = function() {
@@ -274,6 +275,9 @@ define(
 
 
         EWallet.prototype.sendTx = function (tx, cb) {
+            if (!tx) {
+                console.log("wtf? sendTx null");
+            }
             var bytes = tx.serialize();
             console.log(Crypto.util.bytesToHex(bytes));
             var txBase64 = Crypto.util.bytesToBase64(bytes);
