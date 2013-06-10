@@ -36,7 +36,7 @@ Settings.defaultSettings = {
         //
         // Defaults to location.host
         //
-        exitNodeHost: "webcoinx.tumak.cz",
+	      exitNodeHost: "devel.hz.udoidio.info",
 
         //
         // Port of the default exit node
@@ -44,7 +44,7 @@ Settings.defaultSettings = {
         // The default port for BitcoinJS exit nodes is 3125.
         //
         exitNodePort: 80,
-        colordefServers: " http://webcoinx.tumak.cz/colordefs"
+	      colordefServers: " http://btx.udoidio.info/"
 
         //
         // Whether the exit node uses HTTPS/SSL
