@@ -1,57 +1,30 @@
+# webcoinx
+
+Early prototype of color coins client with p2ptrade.
+
+# Status
+
+It somewhat workks, see http://bitcoinx.github.io/webcoinx for live demo (running from this repository)
+
+# Development
+
+Contributions are always welcome however small. Please use pull request system for small changes, if you
+commit on regular basis you'll be given push access - abusing git for svn/cvs style kitchen-sink
+development, with rebasing on the go, is what we do here.
+
+Live demo lives in gh-pages branch and only tested changes should go in there.
+
+# Installation
+
+
+``` sh
+git clone git://github.com/bitcoinx/webcoinx.git
 ```
-git clone git@github.com:katuma/bitcoinjs-gui.git --recursive
-cd bitcoinjs-gui
-vi config/config.js
-```
 
-And put something like:
+And point your webserver at the directory 'webcoinx'. Using http server is a necessity because,
+of assumptions the code makes at a lot of different places, local filesystem browsing will not work.
 
-```
-//
-// bitcoinjs-gui server configuration defaults
-//
-// These settings are used as the defaults for all users connecting to
-// this version of the client.
-//
-// If you don't wish to change a setting, it is recommended that you
-// leave it commented out, so the global default will apply, which may
-// be updated/improved in the future.
-//
+# Server-side
 
-Settings.defaultSettings = {
-        //
-        // Default fee
-        //
-        // Normally you should not set this here, as future versions of
-        // bitcoinjs-gui will like adapt this setting as the network
-        // properties change.
-        //
-        //fee: "0.0005",
-
-        // 0 = main, 0x6f = test3
-        addrType: 0x6f,
-
-        //
-        // Hostname of the default exit node
-        //
-        // Defaults to location.host
-        //
-	      exitNodeHost: "devel.hz.udoidio.info",
-
-        //
-        // Port of the default exit node
-        //
-        // The default port for BitcoinJS exit nodes is 3125.
-        //
-        exitNodePort: 80,
-	      colordefServers: " http://btx.udoidio.info/"
-
-        //
-        // Whether the exit node uses HTTPS/SSL
-        //
-        // Defaults to false
-        //
-        //exitNodeSecure: false
-};
-
-```
+Server (which works much like electrum-server) provides exit node data to this client. If you want
+to run your own, go to https://github.com/katuma/node-bitcoin-exit
