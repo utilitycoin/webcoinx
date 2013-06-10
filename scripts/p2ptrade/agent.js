@@ -112,6 +112,7 @@ define(["jquery", "p2ptrade/offer", "p2ptrade/proposal"], function($, ExchangeOf
         };
         ExchangePeerAgent.prototype.makeExchangeProposal = function(orig_offer, my_address, my_value, related_offer) {
             log_event("ExchangePeerAgent.makeExchangeProposal");
+
             if (this.hasActiveEP())
                 throw "already have active EP (in makeExchangeProposal)";
             var offer = new ExchangeOffer(orig_offer);

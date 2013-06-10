@@ -174,7 +174,8 @@ $(function () {
         function updateBalance() {
             
             var color = getColor(); // '' = BTC
-            pgui.setCurrentColor(color);
+            console.log('@@@@'+color);
+            pgui.setCurrentColor(color!=''?color:false, (color!='')?colorMan.cmap(color).unit.toString():"1");
             var v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
             if (color) {
                 // btc2color prevents rounding errors
