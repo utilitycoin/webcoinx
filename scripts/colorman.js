@@ -1,7 +1,8 @@
-define(function () {
+define(["jquery"], function ($) {
   var exitNode = null;
   var colorspace = null;
-  var colormap = {false:false};
+  var cinit = {false:{name:"BTC",colorid:false}};
+  var colormap = $.extend({}, cinit);
   var ColorMan = function (exitnode) {
       ColorMan.instance = this; // LOL singleton
       exitNode = exitnode;
@@ -241,7 +242,7 @@ define(function () {
      var prev = null;
      var clist = [];
      colorspace = null;
-     colormap = {false:false};
+     colormap = $.extend({}, cinit);
 
     function fixurl(url) {
         if (url[url.length-1] != '/')
@@ -307,7 +308,7 @@ define(function () {
 
 
   ColorMan.prototype.cname = function(cid) {
-    return id2name(cid) || "BTC";
+    return id2name(cid);
   }
 
   ColorMan.prototype.btc2color = function(b,c) {
@@ -324,6 +325,20 @@ define(function () {
         var units = colormap[color].unit;
         return balance.divide(BigInteger.valueOf(units));
     }
+
+  // take value in satoshi (as string) and colorid, return human-readable representation
+  ColorMan.prototype.formatValue = function(value, color) {
+    if (color) {
+      var units = colormap[color].unit;
+      return (new BigInteger(value.toString(), 10)).divide(new BigInteger(units.toString(),10))
+    }
+    return Bitcoin.Util.formatValue((new BigInteger(value.toString(), 10)).toString());
+  }
+  ColorMan.prototype.formatValueU = function(value, color) {
+    color = color?color:false;
+    return this.formatValue(value, color) + ' ' + id2name(color);
+  }
+
 
     ColorMan.prototype.is_issue = function(txhash) {
         return getColorByDefinition(txhash,0);

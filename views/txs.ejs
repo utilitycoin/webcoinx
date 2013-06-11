@@ -29,13 +29,13 @@
 	  <% if (wallet) { %>
 		  <td><%=tx.getDescription(wallet,cm)%></td>
 		  <% var impact = tx.calcImpact(wallet,cm); %>
-		  <td><%=(impact.sign == -1) ? Bitcoin.Util.formatValue(cm.s2c(tx.color.colorid, impact.value), tx.color.name) : ""%></td>
-		  <td><%=(impact.sign == 1) ? Bitcoin.Util.formatValue(cm.s2c(tx.color.colorid, impact.value), tx.color.name) : ""%></td>
+		  <td><%=(impact.sign == -1) ? cm.formatValueU(impact.value, tx.color.colorid) : "" %></td>
+		  <td><%=(impact.sign == 1) ? cm.formatValueU(impact.value, tx.color.colorid) : "" %></td>
 	  <% } else { %>
-		  <td><%=Bitcoin.Util.formatValue(tx.getTotalValue(), tx.color)%></td>
+		  <td><%=cm.formatValueU(tx.getTotalValue(), tx.color.colorid)%></td>
 	  <% } %>
                   <td>
-<%=Bitcoin.Util.formatValue(impact.fees)%>
+<%=cm.formatValueU(impact.fees)%>
 		  <td class="detail"><img src="images/detail.png" alt=""></td>
 		</tr>
 	<% } %>

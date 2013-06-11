@@ -11,6 +11,7 @@ define(
                 ewallet = new EWallet(wm, cm, exit);
             }
             this.ewallet = ewallet;
+            this.cm = cm;
             
             this.comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
             this.epa = new ExchangePeerAgent(ewallet, this.comm);
@@ -65,7 +66,29 @@ define(
                 text = "Transaction in progress: " + this.epa.active_ep.state;
             }
 
-            $("#status").text(text);
+            $("#p2p_status").text(text);
+            var bids = $('#p2p_bids');
+            var asks = $('#p2p_asks');
+
+            bids.empty();
+            asks.empty();
+            var offers = this.epa.their_offers;
+            var my_offers = this.epa.my_offers;
+            for (var oid in offers) {
+                var offer = offers[oid];
+                var target;
+                if (offer.A.colorid == this.colorid && offer.B.colorid == false) {
+                    target = asks;
+                } else if (offer.B.colorid == this.colorid && offer.A.colorid == false) {
+                    target = bids;
+                } else continue;
+
+                target.append('<tr><td>'+this.cm.formatValueU(offer.A.value, offer.A.colorid)
+                              +"<td>"+this.cm.formatValueU(offer.B.value, offer.B.colorid));
+            }
+
+
+
         };
 
         p2pgui.prototype.setCurrentColor = function(colorid, unit) {
