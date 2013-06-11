@@ -70,22 +70,28 @@ define(
             var bids = $('#p2p_bids');
             var asks = $('#p2p_asks');
 
-            bids.empty();
-            asks.empty();
             var offers = this.epa.their_offers;
             var my_offers = this.epa.my_offers;
-            for (var oid in offers) {
-                var offer = offers[oid];
-                var target;
-                if (offer.A.colorid == this.colorid && offer.B.colorid == false) {
-                    target = asks;
-                } else if (offer.B.colorid == this.colorid && offer.A.colorid == false) {
-                    target = bids;
-                } else continue;
+            var self = this;
 
-                target.append('<tr><td>'+this.cm.formatValueU(offer.A.value, offer.A.colorid)
-                              +"<td>"+this.cm.formatValueU(offer.B.value, offer.B.colorid));
+            function display(bids, asks, offers) {
+                bids.empty();
+                asks.empty();
+                for (var oid in offers) {
+                    var offer = offers[oid];
+                    var target;
+                    if (offer.A.colorid == self.colorid && offer.B.colorid == false) {
+                        target = asks;
+                    } else if (offer.B.colorid == self.colorid && offer.A.colorid == false) {
+                        target = bids;
+                    } else continue;
+
+                    target.append('<tr><td>'+self.cm.formatValueU(offer.A.value, offer.A.colorid)
+                                  +"<td>"+self.cm.formatValueU(offer.B.value, offer.B.colorid));
+                }
             }
+            display($('#p2p_bids'), $('#p2p_asks'), offers);
+            display($('#my_p2p_bids'), $('#my_p2p_asks'), my_offers);
 
 
 
