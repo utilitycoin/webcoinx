@@ -106,7 +106,12 @@ define(function () {
 	  // Handle JSON-RPC result messages
 	  if ("undefined" !== typeof data.result &&
 		    "function" == typeof this.callbacks[data.id]) {
+		try {
 		  this.callbacks[data.id](data.error, data.result);
+		} catch (e) {
+			console.log("Handler crashed:");
+			console.log(e.stack);
+		}
 
 	    // Handle JSON-RPC request messages
 	  } else if ("undefined" !== typeof data.method) {
