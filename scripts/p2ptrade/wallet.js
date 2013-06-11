@@ -246,27 +246,6 @@ define(
             var self = this;
             $(wm).bind('walletInit', function(e) {
                            self.wallet = e.newWallet.wallet;
-                           // TODO: remove once selectCoins is moved to bitcoinjs-lib
-                           self.wallet.selectCoins = function (rqValue, color) {
-                               var selectedOuts = [];
-                               var selectedValue = BigInteger.ZERO;
-                               var i;
-                               for (i = 0; i < this.unspentOuts.length; i++) {
-                                   if (!this.isGoodColor(i, color)) continue;
-                                   selectedOuts.push(this.unspentOuts[i]);
-
-                                   selectedValue = selectedValue.add(Bitcoin.Util.valueToBigInt(this.unspentOuts[i].out.value));
-                                   
-                                   if (selectedValue.compareTo(rqValue) >= 0) break;
-                               }
-                               if (selectedValue.compareTo(rqValue) < 0) 
-                                   return null;
-                               else 
-                                   return {
-                                       outs: selectedOuts,
-                                       value: selectedValue
-                                   };
-                           };
                        });
             this.exit = exit;
             this.wm = wm;

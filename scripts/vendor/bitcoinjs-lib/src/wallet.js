@@ -239,6 +239,27 @@ Bitcoin.Wallet = (function () {
     return utxo.color && (utxo.color === currentColor);
   };
 
+  Wallet.prototype.selectCoins = function (rqValue, color) {
+    var selectedOuts = [];
+    var selectedValue = BigInteger.ZERO;
+    var i;
+    for (i = 0; i < this.unspentOuts.length; i++) {
+      if (!this.isGoodColor(i, color)) continue;
+      selectedOuts.push(this.unspentOuts[i]);
+
+      selectedValue = selectedValue.add(Bitcoin.Util.valueToBigInt(this.unspentOuts[i].out.value));
+
+      if (selectedValue.compareTo(rqValue) >= 0) break;
+    }
+    if (selectedValue.compareTo(rqValue) < 0) 
+      return null;
+    else 
+      return {
+        outs: selectedOuts,
+        value: selectedValue
+      };
+  };
+
   Wallet.prototype.getBalance = function (currentColor) {
     var balance = BigInteger.valueOf(0);
     for (var i = 0; i < this.unspentOuts.length; i++) {
