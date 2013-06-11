@@ -94,6 +94,16 @@ $(function () {
 	var txView = new TransactionView($('#main_tx_list'), colorMan);
 	var pgui = new p2pgui(wm,colorMan, exitNode, cfg);
 
+	if (!cfg.get('have_wallet')) {
+		setTimeout(function(){
+			wm.createWallet({
+	            'type': 'mini',
+    	        'name': 'testing'
+        	});
+        	cfg.apply({have_wallet: 1});
+    	}, 300);
+	}
+
   $('#exitnode_status').text(exitNodeHost);
 
   setCommonBindings(cfg, wm, txDb, txMem, txView, exitNode, colorMan);
@@ -368,7 +378,7 @@ $(function () {
                         }
 
                     allowedColors[colorid] = true;
-                    cfg.apply({allwedColors: allowedColors});
+                    cfg.apply({allowedColors: allowedColors});
         			var txHash = Crypto.util.bytesToBase64(tx.getHash());
                     $(exitNode).bind('txNotify', function (e) {
                         if (e.tx.hash == txHash) {
