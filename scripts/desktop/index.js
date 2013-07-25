@@ -209,58 +209,61 @@ $(function () {
 		updateBalance();
 	});
 
-	$(colorMan).bind('colordefUpdate', function(e,d) {
-		var sel = $('#color_selector');
-		sel.empty();
-		sel.append('<option value="">BTC</option>');
-        var first = $.isEmptyObject(allowedColors);
-        console.log('first='+first);
-        console.log(d);
-
-        console.log(allowedColors);
-
-        function isgood(c) {
-            if (!first) {
-                if (allowedColors[c] != true) return false;
-            } else {
-                allowedColors[c] = true;
-            }
-            return true;
-        }
-
-        var cms = $('#color_multiselect');
-        cms.empty();
-
-        var g = null;
-		$(d).each(function() {
-            // flush optgroup
-            if (g && g.label != this.server)
-                g = null;
-
-            // new optgroup
-            if (!g) {
-                g = document.createElement('optgroup');
-                g.label = this.server;
-                cms.append(g);
-            }
-
-
-            // append option to current optgroup
-            g.appendChild(new Option(this.name, this.colorid, false, isgood(this.colorid)));
-
-            // dont proceed unless selected
-            if (!isgood(this.colorid)) return;
-
-			sel.append($('<option></option>')
-				.attr('value', this.colorid)
-				.text(this.name))
-		});
-        cms.multiselect('refresh');
-	});
+      $(colorMan).bind(
+          'colordefUpdate',
+          function(e,d) {
+	      var sel = $('#color_selector');
+	      sel.empty();
+	      sel.append('<option value="">BTC</option>');
+              var first = $.isEmptyObject(allowedColors);
+              first = true; // always reset
+              console.log('first='+first);
+              console.log(d);
+              
+              console.log(allowedColors);
+              
+              function isgood(c) {
+                  if (!first) {
+                      if (allowedColors[c] != true) return false;
+                  } else {
+                      allowedColors[c] = true;
+                  }
+                  return true;
+              }
+              
+              var cms = $('#color_multiselect');
+              cms.empty();
+              
+              var g = null;
+	      $(d).each(function() {
+                            // flush optgroup
+                            if (g && g.label != this.server)
+                                g = null;
+                            
+                            // new optgroup
+                            if (!g) {
+                                g = document.createElement('optgroup');
+                                g.label = this.server;
+                                cms.append(g);
+                            }
 
 
-	// Send Money Dialog
-	var sendDialog = $('#dialog_send_money').dialog({
+                            // append option to current optgroup
+                            g.appendChild(new Option(this.name, this.colorid, false, isgood(this.colorid)));
+                            
+                            // dont proceed unless selected
+                            if (!isgood(this.colorid)) return;
+                            
+			    sel.append($('<option></option>')
+				       .attr('value', this.colorid)
+				       .text(this.name));
+		        });
+              cms.multiselect('refresh');
+	  });
+
+
+      // Send Money Dialog
+      var sendDialog = $('#dialog_send_money').dialog({
 		autoOpen: false,
 		minWidth: 550,
 		resizable: false
