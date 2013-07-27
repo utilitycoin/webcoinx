@@ -13,6 +13,9 @@ Bitcoin.Wallet = (function () {
     // the closure of this constructor.
     var keys = [];
 
+    // is update in progress?
+    this.dirty = 0;
+
     // Public hashes of our keys
     this.addressHashes = [];
 

@@ -288,12 +288,14 @@ define(["jquery"], function ($) {
       cb();
       return;
     }
+    wallet.dirty += 1;
     wallet.unspentOuts.forEach(function (utxo) {
       var hash = Crypto.util.bytesToHex(Crypto.util.base64ToBytes(utxo.tx.hash).reverse());
       getColor(hash, utxo.index, function (utxo_color) {
 	utxo.color = utxo_color;
 	left = left - 1;
 	if (left == 0) {
+          wallet.dirty -= 1;
           cb();
         }
       });

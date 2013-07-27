@@ -47,33 +47,44 @@ define(["jquery"], function ($) {
       txView.setBlockHeight(e.height);
     });
 
-    $(exitNode).bind('txData', function (e) {
-      console.log('ev txdata');
-      for (var i = 0; i < e.txs.length; i++) {
-        if (wm.activeWallet) {
-          wm.activeWallet.wallet.process(e.txs[i]);
-        }
-      }
-    colorman.update(wm, function() {
-      $(wm).trigger('walletUpdate');
-      var db = e.confirmed ? txDb : txMem;
-
-      var doit;
-      doit = function() {
-        var tx = e.txs.shift();
-        if (!tx) {
-      		$(db).trigger('update');
-		return;
-	}
-	colorman.txcolor(tx.hash, function(c) {
-           tx.color = c;
-           db.addTransactionNoUpdate(tx);
-           return doit();
-        });
-      } 
-      doit();
-    });
-  });
+      $(exitNode).bind(
+          'txData',
+          function (e) {
+              console.log('ev txdata');
+              var wallet = null;
+              if (wm.activeWallet)
+                  wallet = wm.activeWallet.wallet;
+              if (wallet) {
+                  wallet.dirty += 1;
+                  for (var i = 0; i < e.txs.length; i++) {
+                      wallet.process(e.txs[i]);
+                  }
+                  $(wm).trigger('walletUpdate');
+                  colorman.update(
+                      wm,
+                      function() {
+                          wallet.dirty -= 1;
+                          $(wm).trigger('walletUpdate');
+                          var db = e.confirmed ? txDb : txMem;
+                          
+                          function doit () {
+                              var tx = e.txs.shift();
+                              if (!tx) {
+      		                  $(db).trigger('update');
+		                  return;
+	                      }
+	                      colorman.txcolor(
+                                  tx.hash,
+                                  function(c) {
+                                      tx.color = c;
+                                      db.addTransactionNoUpdate(tx);
+                                      return doit();
+                                  });
+                          } 
+                          doit();
+                      });
+              }
+          });
 
     $(exitNode).bind('txAdd', function (e) {
       console.log('ev txAdd', e);
