@@ -210,20 +210,24 @@ Bitcoin.Wallet = (function () {
 
     // Remove spent outputs
     for (j = 0; j < tx.ins.length; j++) {
-      var txin = new TransactionIn(tx.ins[j]);
-      var pubkey = txin.script.simpleInPubKey();
-      hash = Crypto.util.bytesToBase64(Bitcoin.Util.sha256ripe160(pubkey));
-      for (k = 0; k < this.addressHashes.length; k++) {
-        if (this.addressHashes[k] === hash) {
-          for (var l = 0; l < this.unspentOuts.length; l++) {
-            if (txin.outpoint.hash == this.unspentOuts[l].tx.hash &&
-                txin.outpoint.index == this.unspentOuts[l].index) {
-              this.unspentOuts.splice(l, 1);
+        try {
+            var txin = new TransactionIn(tx.ins[j]);
+            var pubkey = txin.script.simpleInPubKey();
+            var hash = Crypto.util.bytesToBase64(Bitcoin.Util.sha256ripe160(pubkey));
+            for (var k = 0; k < this.addressHashes.length; k++) {
+                if (this.addressHashes[k] === hash) {
+                    for (var l = 0; l < this.unspentOuts.length; l++) {
+                        if (txin.outpoint.hash == this.unspentOuts[l].tx.hash &&
+                            txin.outpoint.index == this.unspentOuts[l].index) {
+                            this.unspentOuts.splice(l, 1);
+                        }
+                    }
+                    break;
+                }
             }
-          }
-          break;
+        } catch (x) {
+            console.log('got non-standard scriptSig: ' + x.toString());
         }
-      }
     }
 
     // Index transaction
