@@ -94,15 +94,37 @@ $(function () {
 	var txView = new TransactionView($('#main_tx_list'), colorMan);
 	var pgui = new p2pgui(wm,colorMan, exitNode, cfg);
 
-	if (!cfg.get('have_wallet')) {
-		setTimeout(function(){
-			wm.createWallet({
-	            'type': 'mini',
-    	        'name': 'testing'
-        	});
-        	cfg.apply({have_wallet: 1});
-    	}, 300);
-	}
+      if (!cfg.get('have_wallet')) {
+	  setTimeout(function(){
+			 wm.createWallet({
+	                                     'type': 'mini',
+    	                                     'name': 'testing'
+        	                         });
+        	         cfg.apply({have_wallet: 1});
+    	             }, 300);
+      }
+      
+      if (cfg.get('addrType') == 0x6f) { // testnet
+          $('#faucet').click(
+              function () {
+                  if (!wallet) return;
+                  $.ajax(
+                      "http://devel.hz.udoidio.info/faucet", 
+                      {
+                          type: 'POST',
+                          data: { address: wallet.getCurAddress().toString() }
+                      })
+                      .done(function (data) {
+                                $('#testnet_wallet').hide();
+                                alert('You got 1 testnet Bitcoin, transaction id: ' + data);
+                            })
+                      .fail(function () {
+                              alert('Sorry, faucet failure');
+                            });
+              });
+          $('#testnet_wallet').show();
+      }
+      
 
   $('#exitnode_status').text(exitNodeHost);
 
