@@ -320,6 +320,32 @@ $(function () {
 		issueDialog.find('.entry').show();
 		issueDialog.find('.confirm, .loading').hide();
 	});
+        function update_issue_cost () {
+            function set(s) {
+                if (!s) s = "amount X unit";
+                $('#issue_cost').html(s);
+            }
+	    var amount_s = ""+$.fn.autoNumeric.Strip("dialog_issue_amount");
+	    if (!amount_s) return set();
+	    var amount = Bitcoin.Util.parseValue(amount_s,1);
+	    if (amount.compareTo(BigInteger.ZERO) <= 0)
+                return set();
+	    var unit_s = ""+$.fn.autoNumeric.Strip("dialog_issue_unit");
+	    if (!unit_s) return set();
+	    var unit = Bitcoin.Util.parseValue(unit_s,1);
+	    if (unit.compareTo(BigInteger.ZERO) <= 0) return set();
+            var cost = amount.multiply(unit);
+            var cost_s = Bitcoin.Util.formatValue(cost);
+	    if (cost.compareTo(wallet.getBalance()) > 0) {
+                cost_s = "<span style='color:red'>" + cost_s + "</span>";
+            }
+            return set(cost_s);
+        }
+        issueDialog.find('#dialog_issue_amount').change(update_issue_cost);
+        issueDialog.find('#dialog_issue_amount').keyup(update_issue_cost);
+        issueDialog.find('#dialog_issue_unit').change(update_issue_cost);
+        issueDialog.find('#dialog_issue_unit').keyup(update_issue_cost);
+
 	issueDialog.find('.issue').click(function (e) {
 		e.preventDefault();
 		var msgHub = issueDialog.find('.messages');
