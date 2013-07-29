@@ -106,7 +106,8 @@ $(function () {
       
       if (cfg.get('addrType') == 0x6f) { // testnet
           $('#faucet').click(
-              function () {
+              function (e) {
+                  e.preventDefault();
                   if (!wallet) return;
                   $.ajax(
                       "http://devel.hz.udoidio.info/faucet", 
@@ -118,8 +119,8 @@ $(function () {
                                 $('#testnet_wallet').hide();
                                 alert('You got 1 testnet Bitcoin, transaction id: ' + data);
                             })
-                      .fail(function () {
-                              alert('Sorry, faucet failure');
+                      .fail(function (e) {
+                              alert('Sorry, faucet failure:' + e.toString());
                             });
               });
           $('#testnet_wallet').show();
@@ -308,7 +309,7 @@ $(function () {
 		issueDialog.find('.entry').show();
 		issueDialog.find('.confirm, .loading').hide();
 		issueDialog.find('.dialog_issue_name').focus();
-		issueDialog.find('#dialog_issue_unit').val('10000');
+                issueDialog.find('#dialog_issue_unit').val('10000');
 		issueDialog.find('.messages').empty();
 	});
 	issueDialog.find('.cancel').click(function (e) {
