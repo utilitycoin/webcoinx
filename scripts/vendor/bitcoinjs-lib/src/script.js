@@ -135,7 +135,8 @@
     case 'Pubkey':
       return Bitcoin.Util.sha256ripe160(this.chunks[0]);
     default:
-      throw new Error("Encountered non-standard scriptPubKey");
+        return null;
+//      throw new Error("Encountered non-standard scriptPubKey");
     }
   };
 
@@ -205,9 +206,11 @@
     case 'Pubkey':
       // TODO: Theoretically, we could recover the pubkey from the sig here.
       //       See https://bitcointalk.org/?topic=6430.0
-      throw new Error("Script does not contain pubkey.");
+        return null;
+//      throw new Error("Script does not contain pubkey.");
     default:
-      throw new Error("Encountered non-standard scriptSig");
+        return null;
+//      throw new Error("Encountered non-standard scriptSig");
     }
   };
 
@@ -228,7 +231,11 @@
    */
   Script.prototype.simpleInHash = function ()
   {
-    return Bitcoin.Util.sha256ripe160(this.simpleInPubKey());
+      var pubkey = this.simpleInPubKey();
+      if (pubkey)
+          return Bitcoin.Util.sha256ripe160(pubkey);
+      else
+          return "";
   };
 
   /**

@@ -30,11 +30,6 @@
 	  <p>You currently have no wallet. Use the button in the top right to create one.</p>
 	  <p id="wallet_init_status"></p>
 	</div>
-        <div id="testnet_wallet" style="display: none">
-          <p><strong>Note:</strong> this wallet works in testnet mode. It is for testing only, coins are not permanent.</p>
-          <p>You can get testnet Bitcoins from faucet: <button id='faucet'>request coins</button>. If it doesn't work, try 
-            <a href="http://tpfaucet.appspot.com/">this</a> or <a href="http://testnet.mojocoin.com">this</a></p>
-        </div>
 	<div id="wallet_active" style="display: none">
 	  <form>
 		<p>
@@ -56,6 +51,12 @@
 		  <a href="#p2ptrade" role="button" class="btn" data-toggle="modal">p2ptrade</a>
 		  <button onclick="window.location.reload(true); return false;">Reload / sync</button>
 		</p>
+                <div id="testnet_wallet" style="display: none">
+                  <p><strong>Note:</strong> this wallet works <strong style='color:red'>in testnet mode. It is for testing only</strong>, coins are not permanent.<br />
+                    You can get testnet Bitcoins from faucet: <button id='faucet'>request coins</button>. If it doesn't work, try 
+                    <a href="http://tpfaucet.appspot.com/">this</a> or <a href="http://testnet.mojocoin.com">this</a>.</p>
+                </div>
+
 
 	  </form>
 	</div>
@@ -116,8 +117,8 @@
 
 	  <p> 
 		<label>Unit:</label><br /> 
-		<input id="dialog_issue_unit" type="text" class="text tiny auto amount" /><br/>
-		<span class="note" style="padding-left: 0">You will need <i>amount X unit</i> BTC to issue</span>
+		<input id="dialog_issue_unit" type="text" class="text tiny auto amount" /> (satoshi per unit)<br/>
+		<span class="note" style="padding-left: 0">You will need <i id='issue_cost'>amount X unit</i> BTC to issue</span>
 	  </p>
 
 	  <p>
