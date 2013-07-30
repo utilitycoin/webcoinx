@@ -296,6 +296,11 @@ $(function () {
 	  });
 
 
+      $('#nav_p2ptrade').click(function (e) {
+                                   e.preventDefault();
+                                   $('#p2ptrade').modal();                                   
+                               });
+
       // Send Money Dialog
       var sendDialog = $('#dialog_send_money').dialog({
 		autoOpen: false,
