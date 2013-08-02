@@ -96,7 +96,7 @@ define(
                             "<td>" + self.cm.formatValueU(offer.B.value, offer.B.colorid);
                         // bleh
                         if (button) {
-                            res = res + '<td><button id="buy-button" class="btn btn-primary btn-block" onclick="';
+                            res = res + '<td><button class="btn btn-primary btn-block" onclick="';
                             a = self.cm.formatValue(offer.A.value, offer.A.colorid);
                             b = self.cm.formatValue(offer.B.value, offer.B.colorid);
                             res = res + "$('#" + op + "amt').val('" + a + "'); $('#" + op +  "price').val('" + b + "');";
