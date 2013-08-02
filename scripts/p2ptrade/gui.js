@@ -16,20 +16,13 @@ define(
 
             this.comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
             this.epa = new ExchangePeerAgent(ewallet, this.comm);
+
             function refresh() {
                 self.comm.update();
                 self.updateGUIstate();
             }
             refresh();
-            window.setInterval(refresh, 5000);
-            window.setTimeout(refresh, 1000);
-
-/*
-            window.setInterval(function () {
-                self.comm.update();
-                self.updateGUIstate();
-            }, 1000);
-*/
+            window.setInterval(refresh, 1000);
 
             $('#buy-button').click(function (event) {
                 event.preventDefault();
@@ -46,7 +39,7 @@ define(
             });
         }
 
-                // send refers to what we're sending to counterparty, recv what we want in return
+        // send refers to what we're sending to counterparty, recv what we want in return
         // TBA: should API user (which gui is) ever worry about units?        
         P2pgui.prototype.create_offer = function (sendcolor, sendunit, sendamt, recvcolor, recvunit, recvamt) {
             console.log("create_offer: send " + sendcolor + "," + sendunit + "," + sendamt);
@@ -107,13 +100,7 @@ define(
                             return;
                         }
 
-//                        res = '<tr><td>' + self.cm.formatValueU(quantity.value, quantity.colorid) +
-//                            "<td>" + self.cm.formatValueU(price.value, price.colorid);
-                        // bleh
                         if (button) {
-                            //res = res + '<td><button class="btn btn-primary btn-block" onclick="';
-                            //res = res + "$('#" + op + "amt').val('" + a + "'); $('#" + op +  "price').val('" + b + "');";
-                            //res = res + '">' + op + '</button>';
                             $btn = $('<button>').addClass('btn btn-primary btn-block')
                                 .text(op)
                                 .click(function () {
@@ -134,7 +121,6 @@ define(
                             $row.append($btn);
                         }
                         target.append($row);
-                        //target.append(res);
                     };
                 bids.empty();
                 asks.empty();
@@ -157,4 +143,3 @@ define(
         return P2pgui;
     }
 );
-
