@@ -1,4 +1,4 @@
-  <div id="hld">
+<div id="hld">
 	<div class="wrapper">
 	  <div id="header">
 		<div class="hdrl"></div>
@@ -82,13 +82,12 @@
 		<p class="right">Powered by <a href="https://github.com/katuma/node-bitcoin-exit">node-bitcoin-exit</a></p>	
 	  </div>
 	</div><!-- END #wrapper -->
-  </div><!-- END #hld -->
+</div><!-- END #hld -->
 
-  <div id="address_load" title="Load Transactions" style="display: none">
+<div id="address_load" title="Load Transactions" style="display: none">
 	<div class="query">
 	  <p>Load the transaction list for any set of Bitcoin addresses, enter them here (one address per line):</p>
-	  <textarea id="addresses" rows="10" style="width: 90%">
-</textarea>
+	  <textarea id="addresses" rows="10" style="width: 90%"></textarea>
 	  <div><button id="address_load_start">Fetch transactions</button></div>
 	</div>
 	<div class="progress"></div>
@@ -97,11 +96,12 @@
 	  <div class="txs"></div>
 	  <button id="address_load_reset">&laquo; Back</button>
 	</div>
-  </div>
+</div>
   
-  <div id="color_manager" title="Manage colors" style="display: none; max-height: 400px;">
-  </div>
-  <div id="dialog_issue_money" title="Issue coins" class="block" style="display: none">
+<div id="color_manager" title="Manage colors" style="display: none; max-height: 400px;">
+</div>
+
+<div id="dialog_issue_money" title="Issue coins" class="block" style="display: none">
 	<form class="entry">
 	  <div class="messages"></div>
 
@@ -140,7 +140,7 @@
 
   </div>
 
-  <div id="dialog_send_money" title="Send coins" class="block" style="display: none">
+<div id="dialog_send_money" title="Send coins" class="block" style="display: none">
 	<form class="entry">
 
 	  <div class="messages"></div>
@@ -172,7 +172,7 @@
 	</div>
   </div>
 
-  <div id="dialog_settings" title="Settings" class="block_content" style="display: none">
+<div id="dialog_settings" title="Settings" class="block_content" style="display: none">
 	<div class="sidebar">
 	  <ul class="sidemenu">
 		<li><a href="#settings_panel_general">General Settings</a></li>
@@ -249,103 +249,103 @@
 }
 </style>
 <div id="p2ptrade" class="modal scroll hide span10" role="dialog">
-<div class="modal-header">
-<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-<h3>p2ptrade</h3>
-</div>
-<div class="container">
-  <div class="row">
-    <div class="span4">
-      <div class="well well-small">
-        <h4>Buy <span class='colorind'></span></h4>
-        <form class="form-inline">
-          <label class="control-label" for="quantity">Quantity (units)</label>
-          <input type="text" id="buyamt" class="span2" value="1" />
-          <label class="control-label" for="price">Price (BTC/unit)</label>
-          <input type="text" id="buyprice" class="span2" value="0.001" />
-          <p>Total BTC:</p>
-          
-          <button id="buy-button" class="btn btn-primary btn-block">Buy</button>
-        </form>
-      </div>
-    </div>
-    <div class="span4">
-      <div class="well well-small">
-        <h4>Sell <span class='colorind'></span></h4>
-        <form class="form-inline">
-          <label class="control-label" for="quantity">Quantity (units)</label>
-          <input type="text" id="sellamt" class="span2" value="1" />
-          <label class="control-label" for="price">Price (BTC/unit)</label>
-          <input type="text" id="sellprice" class="span2" value="0.001" />
-          <p>Total BTC:</p>
-          
-          <button id="sell-button" class="btn btn-primary btn-block">Sell</button>
-        </form>
-      </div>
-   </div>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>p2ptrade</h3>
   </div>
+  <div class="container">
+    <div class="row">
+      <div class="span4">
+        <div class="well well-small">
+          <h4>Buy <span class="colorind"></span></h4>
+          <form class="form-inline">
+            <label class="control-label" for="quantity">Quantity (units)</label>
+            <input type="text" id="buyamt" class="span2" value="1" />
+            <label class="control-label" for="price">Price (BTC/unit)</label>
+            <input type="text" id="buyprice" class="span2" value="0.001" />
+            <p>Total BTC:</p>
+            
+            <button id="buy-button" class="btn btn-primary btn-block">Buy</button>
+          </form>
+        </div>
+      </div>
+      <div class="span4">
+        <div class="well well-small">
+          <h4>Sell <span class="colorind"></span></h4>
+          <form class="form-inline">
+            <label class="control-label" for="quantity">Quantity (units)</label>
+            <input type="text" id="sellamt" class="span2" value="1" />
+            <label class="control-label" for="price">Price (BTC/unit)</label>
+            <input type="text" id="sellprice" class="span2" value="0.001" />
+            <p>Total BTC:</p>
+            
+            <button id="sell-button" class="btn btn-primary btn-block">Sell</button>
+          </form>
+        </div>
+     </div>
+    </div>
+    
+    <div class="row">
+      <div class="span4">
+        <div class="well well-small">
+        	<h4>My Bids:</h4>
+          <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="my_p2p_bids">
+              </tbody>
+          </table>      	
   
-  <div class="row">
-    <div class="span4">
-      <div class="well well-small">
-      	<h4>My Bids:</h4>
-        <table class="table table-bordered table-hover table-condensed">
-          <thead>
-              <tr>
-                <th>Quantity</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody id="my_p2p_bids">
-            </tbody>
-        </table>      	
-
-        <h4>Bids:</h4>
-
-        <table class="table table-bordered table-hover table-condensed">
-          <thead>
-              <tr>
-                <th>Quantity</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody id="p2p_bids">
-            </tbody>
-        </table>
+          <h4>Bids:</h4>
+  
+          <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="p2p_bids">
+              </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="span4">
+        <div class="well well-small">
+          <h4>My Asks:</h4>
+          
+          <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="my_p2p_asks">
+              </tbody>
+          </table>
+  
+          <h4>Asks:</h4>
+          
+          <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="p2p_asks">
+              </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div class="span4">
-      <div class="well well-small">
-        <h4>My Asks:</h4>
-        
-        <table class="table table-bordered table-hover table-condensed">
-          <thead>
-              <tr>
-                <th>Quantity</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody id="my_p2p_asks">
-            </tbody>
-        </table>
-
-        <h4>Asks:</h4>
-        
-        <table class="table table-bordered table-hover table-condensed">
-          <thead>
-              <tr>
-                <th>Quantity</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody id="p2p_asks">
-            </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
- </div> <!-- /container -->
+  
+  </div> <!-- /container -->
 
 </div> <!-- /modal -->
 <!--
