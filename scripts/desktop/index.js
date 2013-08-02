@@ -229,6 +229,7 @@ $(function () {
               console.log(autoNumericColor);
           }
           $('#wallet_active .balance .value').text(v);
+          $('#wallet_active .balance .unit').text(getColorName());
           
           $('.colorind').text(getColorName());
           var addr = wallet.getCurAddress().toString();
