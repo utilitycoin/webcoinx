@@ -16,11 +16,20 @@ define(
 
             this.comm = new HTTPExchangeComm('http://p2ptrade.btx.udoidio.info/messages');
             this.epa = new ExchangePeerAgent(ewallet, this.comm);
+            function refresh() {
+                self.comm.update();
+                self.updateGUIstate();
+            }
+            refresh();
+            window.setInterval(refresh, 5000);
+            window.setTimeout(refresh, 1000);
 
+/*
             window.setInterval(function () {
                 self.comm.update();
                 self.updateGUIstate();
             }, 1000);
+*/
 
             $('#buy-button').click(function (event) {
                 event.preventDefault();
@@ -78,31 +87,54 @@ define(
                 var oid,
                     displayOfferLine = function (offer) {
                         var target,
-                            res,
-                            a,
-                            b,
+                            //res,
+                            $row,
+                            $btn,
+                            quantity,
+                            price,
                             op;
                         if (offer.A.colorid === self.colorid && offer.B.colorid === false) {
                             target = asks;
+                            quantity = offer.A;
+                            price = offer.B;
                             op = "buy";
                         } else if (offer.B.colorid === self.colorid && offer.A.colorid === false) {
                             target = bids;
+                            quantity = offer.B;
+                            price = offer.A;
                             op = "sell";
                         } else {
                             return;
                         }
 
-                        res = '<tr><td>' + self.cm.formatValueU(offer.A.value, offer.A.colorid) +
-                            "<td>" + self.cm.formatValueU(offer.B.value, offer.B.colorid);
+//                        res = '<tr><td>' + self.cm.formatValueU(quantity.value, quantity.colorid) +
+//                            "<td>" + self.cm.formatValueU(price.value, price.colorid);
                         // bleh
                         if (button) {
-                            res = res + '<td><button class="btn btn-primary btn-block" onclick="';
-                            a = self.cm.formatValue(offer.A.value, offer.A.colorid);
-                            b = self.cm.formatValue(offer.B.value, offer.B.colorid);
-                            res = res + "$('#" + op + "amt').val('" + a + "'); $('#" + op +  "price').val('" + b + "');";
-                            res = res + '">' + op + '</button>';
+                            //res = res + '<td><button class="btn btn-primary btn-block" onclick="';
+                            //res = res + "$('#" + op + "amt').val('" + a + "'); $('#" + op +  "price').val('" + b + "');";
+                            //res = res + '">' + op + '</button>';
+                            $btn = $('<button>').addClass('btn btn-primary btn-block')
+                                .text(op)
+                                .click(function () {
+                                    var a = self.cm.formatValue(offer.A.value, offer.A.colorid),
+                                        b = self.cm.formatValue(offer.B.value, offer.B.colorid),
+                                        quantityAsText = self.cm.formatValue(quantity.value, quantity.colorid),
+                                        priceAsText = self.cm.formatValue(price.value, price.colorid),
+                                        amountField = $('#' + op + "amt"),
+                                        priceField = $('#' + op +  'price');
+                                    amountField.val(quantityAsText);
+                                    priceField.val(priceAsText);
+                                });
                         }
-                        target.append(res);
+                        $row = $('<tr>')
+                            .append($('<td>').text(self.cm.formatValueU(quantity.value, quantity.colorid)))
+                            .append($('<td>').text(self.cm.formatValueU(price.value, price.colorid)));
+                        if ($btn) {
+                            $row.append($btn);
+                        }
+                        target.append($row);
+                        //target.append(res);
                     };
                 bids.empty();
                 asks.empty();
