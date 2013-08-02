@@ -13,7 +13,15 @@ Contributions are always welcome however small. Please use pull request system f
 commit on regular basis you'll be given push access - abusing git for svn/cvs style kitchen-sink
 development, with rebasing on the go, is what we do here.
 
+
 Live demo lives in gh-pages branch and only tested changes should go in there.
+
+## Style guide
+For html, we want to use the Google htmlcss [styleguide](http://google-styleguide.googlecode.com/svn/trunk/htmlcssguide.xml)
+Short summary: 2 spaces indentation
+
+For javascript, we let jslint decide and try to follow as many of its rules as possible. 
+We use 4 spaces indentation.
 
 # Installation
 
