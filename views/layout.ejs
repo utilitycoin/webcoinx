@@ -1,87 +1,278 @@
 <div id="hld">
   <div class="wrapper">
     <div id="header">
-    <div class="hdrl"></div>
-    <div class="hdrr"></div>
-    
-    <ul id="nav">
-      <li class="logo"><h1><a href="#">Menu</a></h1>
-        <ul>
-          <li><a id="address_load_open" href="#">Transaction Viewer...</a></li>
-          <li><a class="settings" href="#">Settings...</a></li>
-        </ul>
-      </li>
+      <div class="hdrl"></div>
+      <div class="hdrr"></div>
+      
+      <ul id="nav">
+        <li class="logo"><h1><a href="#">Menu</a></h1>
+          <ul>
+            <li><a id="address_load_open" href="#">Transaction Viewer...</a></li>
+            <li><a class="settings" href="#">Settings...</a></li>
           </ul>
-    
-    <div id="exitnode_status" class="connectstatus unknown"></div>
+        </li>
+      </ul>
+      
+      <div id="exitnode_status" class="connectstatus unknown"></div>
     </div><!-- END #header -->
     <div class="block">
-  <div class="block_head">
-    <div class="bheadl"></div>
-    <div class="bheadr"></div>
-    <h2>Wallet</h2>
+      <div class="block_head">
+        <div class="bheadl"></div>
+        <div class="bheadr"></div>
+        <h2>Wallet</h2>
 
-    <ul>
-      <li><a href="#" id="wallet_active_recreate">Create</a></li>
-    </ul>
-  </div><!-- END .block_head -->
-  <div class="block_content">
-    <div id="wallet_init">
-      <p>You currently have no wallet. Use the button in the top right to create one.</p>
-      <p id="wallet_init_status"></p>
-    </div>
-    <div id="wallet_active" style="display: none">
-      <div id="testnet_wallet" style="display: none">
-        <p><strong>Note:</strong> this wallet works <strong style='color:red'>in testnet mode. It is for testing only</strong>, coins are not permanent.<br />
+        <ul>
+          <li><a href="#" id="wallet_active_recreate">Create</a></li>
+        </ul>
+      </div><!-- END .block_head -->
+      <div class="block_content">
+        <div id="wallet_init">
+          <p>You currently have no wallet. Use the button in the top right to create one.</p>
+          <p id="wallet_init_status"></p>
+        </div>
+        <div id="wallet_active" style="display: none">
+          <div id="testnet_wallet" style="display: none">
+            <p><strong>Note:</strong> this wallet works <strong style='color:red'>in testnet mode. It is for testing only</strong>, coins are not permanent.<br />
                     You can get testnet Bitcoins from faucet: <button id='faucet'>request coins</button>. If it doesn't work, try 
-          <a href="http://tpfaucet.appspot.com/">this</a> or <a href="http://testnet.mojocoin.com">this</a>.</p>
+              <a href="http://tpfaucet.appspot.com/">this</a> or <a href="http://testnet.mojocoin.com">this</a>.</p>
+          </div>
+          <form>
+            <p>
+              <label for="color_selector">Color: </label>
+              <select id="color_selector"><option value="">BTC</option></select>
+              <button onclick="window.location.reload(true); return false;">Reload / sync</button>
+            </p>
+            <p>
+              <label for="addr">Your <span class='colorind'>?</span> Address:</label>
+              <input id="addr" class="text medium" readonly="readonly"/>
+              <button class="new_addr">New&hellip;</button>
+            </p>
+            <p>
+              <label style="vertical-align: bottom">Your Balance:</label>
+              <span class="balance">
+                <img src="images/ajax-loader.gif" id="updating-balance">
+                <span class="value">Connecting...</span>
+                <span class="unit"></span>
+              </span>
+            </p>
+<!--
+            <p>
+              <button id="nav_send_money">Send coins</button>
+              <button id="nav_issue_money">Issue coins</button>
+              <button id="nav_p2ptrade">p2ptrade</button> 
+            </p>
+-->
+          </form>
+        </div>
+      </div><!-- END .block_content -->
+      <div class="bendl"></div>
+      <div class="bendr"></div>
+    </div><!-- END .block -->
+
+    <div id="tabs">
+      <ul>
+        <li><a href="#panel-send">Send coins</a></li>
+        <li><a href="#panel-issue">Issue coins</a></li>
+        <li><a href="#panel-p2ptrade">P2P trade</a></li>
+        <li><a href="#panel-transactions" id="tab-transactions">Transactions</a></li>
+      </ul>
+
+      <div class="block" id="panel-transactions">
+        <div class="block_head">
+          <div class="bheadl"></div>
+          
+          <div class="bheadr"></div>
+          <h2>Transactions</h2>
+        </div><!-- END .block_head -->
+        <div class="block_content" id="main_tx_list">
+        </div><!-- END .block_content -->
+        <div class="bendl"></div>
+        <div class="bendr"></div>
+      </div><!-- END .block -->
+
+      <div id="panel-send">
+        <div id="dialog_send_money" title="Send coins" class="block">
+          <form class="entry">
+
+            <div class="messages"></div>
+            <p> 
+              <label>Amount:</label><br /> 
+              <input id="dialog_send_money_amount" type="text" class="text tiny auto amount" />
+            </p>
+            <p>
+              <label>Pay to:</label><br />
+              <input type="text" class="text small address" /><br />
+              <span class="note" style="padding-left: 0">A Bitcoin Address, e.g. 1KPiGQYcMApEhJfcerftexfCDV7xKZt7fe</span>
+
+            </p>
+            <p>
+              <button class="send">Send</button>
+              <button class="cancel">Cancel</button>
+            </p>
+          </form>
+          <div class="confirm">
+            <p>You are about to send <span class="confirm_amount"></span> to the address <span class="confirm_address">1OIJIPSDJG0sdJG)SDJG0sadjgF</span>.</p>
+
+            <p>Bitcoin transactions are irrevocable. Would you like to proceed?</p>
+            <p><button class="confirm_send">Confirm</button> or <a class="cancel_confirm" href="#">go back</a></p>
+          </div>
+          <div class="loading">
+            <img src="images/walletsend.gif" alt="Sending coins...">
+            <p>Sending coins...</p>
+          </div>
+        </div>
+
       </div>
-      <form>
-        <p>
-          <label for="color_selector">Color: </label>
-          <select id="color_selector"><option value="">BTC</option></select>
-          <button onclick="window.location.reload(true); return false;">Reload / sync</button>
-        </p>
-        <p>
-          <label for="addr">Your <span class='colorind'>?</span> Address:</label>
-          <input id="addr" class="text medium" readonly="readonly"/>
-          <button class="new_addr">New&hellip;</button>
-        </p>
-        <p>
-          <label style="vertical-align: bottom">Your Balance:</label>
-          <span class="balance">
-            <img src="images/ajax-loader.gif" id="updating-balance">
-            <span class="value">Connecting...</span>
-            <span class="unit"></span>
-          </span>
-        </p>
-        <p>
-          <button id="nav_send_money">Send coins</button>
-          <button id="nav_issue_money">Issue coins</button>
-          <button id="nav_p2ptrade">p2ptrade</button>
-        </p>
-      </form>
+
+      <div id="panel-issue">
+        <div id="dialog_issue_money" title="Issue coins" class="block">
+          <form class="entry">
+            <div class="messages"></div>
+
+            <p>
+              <label>Asset/currency name</label><br />
+              <input id="dialog_issue_name" type="text" class="text small address" />
+            </p>
+
+            <p> 
+              <label>Amount:</label><br /> 
+              <input id="dialog_issue_amount" type="text" class="text tiny auto amount" />
+            </p>
+
+            <p> 
+              <label>Unit:</label><br /> 
+              <input id="dialog_issue_unit" type="text" class="text tiny auto amount" /> (satoshi per unit)<br/>
+              <span class="note" style="padding-left: 0">You will need <i id='issue_cost'>amount X unit</i> BTC to issue</span>
+            </p>
+
+            <p>
+              <button class="issue">Issue</button>
+              <button class="cancel">Cancel</button>
+            </p>
+          </form>
+
+          <div class="confirm">
+            <p>You are about to issue <span class="confirm_issue_amount"></span> of <b><span class="confirm_issue_name"></span></b> which will cost <span class="confirm_issue_cost">-1)SDJG0sadjgF</span> BTC.</p>
+
+            <p><button class="confirm_issue">Confirm</button> or <a class="cancel_confirm" href="#">go back</a></p>
+          </div>
+          <div class="loading">
+            <img src="images/walletsend.gif" alt="Sending coins...">
+            <p>Issuing coins...</p>
+
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-p2ptrade">
+        <div id="p2ptrade" class="" role="dialog">
+          <div class="modal-header">
+            <!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> -->
+            <h3>p2ptrade</h3>
+          </div>
+          <div class="container">
+            <div class="row">
+              <div class="span4">
+                <div class="well well-small">
+                  <h4>Buy <span class="colorind"></span></h4>
+                  <form class="form-inline">
+                    <label class="control-label" for="quantity">Quantity (units)</label>
+                    <input type="text" id="buyamt" class="span2" value="1" />
+                    <label class="control-label" for="price">Price (BTC/unit)</label>
+                    <input type="text" id="buyprice" class="span2" value="0.001" />
+                    <p>Total BTC:</p>
+                    
+                    <button id="buy-button" class="btn btn-primary btn-block">Buy</button>
+                  </form>
+                </div>
+              </div>
+              <div class="span4">
+                <div class="well well-small">
+                  <h4>Sell <span class="colorind"></span></h4>
+                  <form class="form-inline">
+                    <label class="control-label" for="quantity">Quantity (units)</label>
+                    <input type="text" id="sellamt" class="span2" value="1" />
+                    <label class="control-label" for="price">Price (BTC/unit)</label>
+                    <input type="text" id="sellprice" class="span2" value="0.001" />
+                    <p>Total BTC:</p>
+                    
+                    <button id="sell-button" class="btn btn-primary btn-block">Sell</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="span4">
+                <div class="well well-small">
+                  <h4>My Bids:</h4>
+                  <table class="table table-bordered table-hover table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody id="my_p2p_bids">
+                    </tbody>
+                  </table>        
+                  
+                  <h4>Bids:</h4>
+                  
+                  <table class="table table-bordered table-hover table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody id="p2p_bids">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="span4">
+                <div class="well well-small">
+                  <h4>My Asks:</h4>
+                  
+                  <table class="table table-bordered table-hover table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody id="my_p2p_asks">
+                    </tbody>
+                  </table>
+                  
+                  <h4>Asks:</h4>
+                  
+                  <table class="table table-bordered table-hover table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody id="p2p_asks">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+          </div> <!-- /container -->
+
+        </div> 
+
+      </div>
+      
     </div>
-  </div><!-- END .block_content -->
-  <div class="bendl"></div>
-  <div class="bendr"></div>
-</div><!-- END .block -->
-<div class="block">
-  <div class="block_head">
-    <div class="bheadl"></div>
-  
-    <div class="bheadr"></div>
-    <h2>Transactions</h2>
-  </div><!-- END .block_head -->
-  <div class="block_content" id="main_tx_list">
-  </div><!-- END .block_content -->
-  <div class="bendl"></div>
-  <div class="bendr"></div>
-</div><!-- END .block -->
 
     <div id="footer">
-    <p class="left">Copyright &copy; 2011 Stefan Thomas, 2013 BitcoinX</p>
-    <p class="right">Powered by <a href="https://github.com/katuma/node-bitcoin-exit">node-bitcoin-exit</a></p> 
+      <p class="left">Copyright &copy; 2011 Stefan Thomas, 2013 BitcoinX</p>
+      <p class="right">Powered by <a href="https://github.com/katuma/node-bitcoin-exit">node-bitcoin-exit</a></p> 
     </div>
   </div><!-- END #wrapper -->
 </div><!-- END #hld -->
@@ -103,134 +294,60 @@
 <div id="color_manager" title="Manage colors" style="display: none; max-height: 400px;">
 </div>
 
-<div id="dialog_issue_money" title="Issue coins" class="block" style="display: none">
-<form class="entry">
-  <div class="messages"></div>
 
-  <p>
-<label>Asset/currency name</label><br />
-<input id="dialog_issue_name" type="text" class="text small address" />
-  </p>
-
-  <p> 
-<label>Amount:</label><br /> 
-<input id="dialog_issue_amount" type="text" class="text tiny auto amount" />
-  </p>
-
-  <p> 
-<label>Unit:</label><br /> 
-<input id="dialog_issue_unit" type="text" class="text tiny auto amount" /> (satoshi per unit)<br/>
-<span class="note" style="padding-left: 0">You will need <i id='issue_cost'>amount X unit</i> BTC to issue</span>
-  </p>
-
-  <p>
-<button class="issue">Issue</button>
-<button class="cancel">Cancel</button>
-  </p>
-    </form>
-
-<div class="confirm">
-  <p>You are about to issue <span class="confirm_issue_amount"></span> of <b><span class="confirm_issue_name"></span></b> which will cost <span class="confirm_issue_cost">-1)SDJG0sadjgF</span> BTC.</p>
-
-  <p><button class="confirm_issue">Confirm</button> or <a class="cancel_confirm" href="#">go back</a></p>
-</div>
-<div class="loading">
-  <img src="images/walletsend.gif" alt="Sending coins...">
-  <p>Issuing coins...</p>
-
-</div>
-
-  </div>
-
-<div id="dialog_send_money" title="Send coins" class="block" style="display: none">
-<form class="entry">
-
-  <div class="messages"></div>
-  <p> 
-<label>Amount:</label><br /> 
-<input id="dialog_send_money_amount" type="text" class="text tiny auto amount" />
-  </p>
-  <p>
-<label>Pay to:</label><br />
-<input type="text" class="text small address" /><br />
-<span class="note" style="padding-left: 0">A Bitcoin Address, e.g. 1KPiGQYcMApEhJfcerftexfCDV7xKZt7fe</span>
-
-  </p>
-  <p>
-<button class="send">Send</button>
-<button class="cancel">Cancel</button>
-  </p>
-</form>
-<div class="confirm">
-  <p>You are about to send <span class="confirm_amount"></span> to the address <span class="confirm_address">1OIJIPSDJG0sdJG)SDJG0sadjgF</span>.</p>
-
-  <p>Bitcoin transactions are irrevocable. Would you like to proceed?</p>
-  <p><button class="confirm_send">Confirm</button> or <a class="cancel_confirm" href="#">go back</a></p>
-</div>
-<div class="loading">
-  <img src="images/walletsend.gif" alt="Sending coins...">
-  <p>Sending coins...</p>
-
-</div>
-  </div>
 
 <div id="dialog_settings" title="Settings" class="block_content" style="display: none">
-<div class="sidebar">
-  <ul class="sidemenu">
-<li><a href="#settings_panel_general">General Settings</a></li>
-<li><a href="#settings_panel_server">Server Settings</a></li>
-<li><a href="#settings_panel_color">Color Settings</a></li>
-<li><a href="#settings_panel_about">About</a></li>
-  </ul>
-  <p><strong>These are local settings.</strong> If you switch browsers or use Webcoin from a different computer, you will have to enter your configuration again..</p>
-</div>
-
-<form class="entry">
-  <div class="sidebar_content" id="settings_panel_general">
-<p>
-  <label>Default Fee:</label><br> 
-  <input id="dialog_settings_fee" type="text" class="text tiny auto amount" /><br>
-  <span class="note" style="padding-left: 0">You can change the fee per transaction in the Send Money dialog.</span>
-</p>
+  <div class="sidebar">
+    <ul class="sidemenu">
+      <li><a href="#settings_panel_general">General Settings</a></li>
+      <li><a href="#settings_panel_server">Server Settings</a></li>
+      <li><a href="#settings_panel_color">Color Settings</a></li>
+      <li><a href="#settings_panel_about">About</a></li>
+    </ul>
+    <p><strong>These are local settings.</strong> If you switch browsers or use Webcoin from a different computer, you will have to enter your configuration again..</p>
   </div>
 
-  <div class="sidebar_content" id="settings_panel_server">
-<p>
-  <label>Exit Node</label><br />
-  <input id="dialog_settings_exitNodeHost" type="text" class="text tiny exitnode" /><br />
-  <span class="note" style="padding-left: 0">The hostname for your Bitcoin exit node.</span>
+  <form class="entry">
+    <div class="sidebar_content" id="settings_panel_general">
+      <p>
+        <label>Default Fee:</label><br> 
+        <input id="dialog_settings_fee" type="text" class="text tiny auto amount" /><br>
+        <span class="note" style="padding-left: 0">You can change the fee per transaction in the Send Money dialog.</span>
+      </p>
+    </div>
 
-</p>
-  </div>
+    <div class="sidebar_content" id="settings_panel_server">
+      <p>
+        <label>Exit Node</label><br />
+        <input id="dialog_settings_exitNodeHost" type="text" class="text tiny exitnode" /><br />
+        <span class="note" style="padding-left: 0">The hostname for your Bitcoin exit node.</span>
 
-  <div class="sidebar_content" id="settings_panel_color">
-<p>
-<div id="color_multiselect" style="width: 360px; height: 300px; display: block;">
-<!--          <select id="color_multiselect" multiple="multiple" style="width: 360px; height: 300px"></select>-->
-</div>
-<div>
+      </p>
+    </div>
+
+    <div class="sidebar_content" id="settings_panel_color">
+      <p>
+        <div id="color_multiselect" style="width: 360px; height: 300px; display: block;">
+          <!--          <select id="color_multiselect" multiple="multiple" style="width: 360px; height: 300px"></select>-->
+        </div>
+        <div>
     Add/remove server:<br/>
-    <input id="colorUrl" type="text" class="text tiny exitnode" />
-    <button id="addColorUrl">Add</button> 
-    <button id="delColorUrl">Remove</button>
-</div>
+          <input id="colorUrl" type="text" class="text tiny exitnode" />
+          <button id="addColorUrl">Add</button> 
+          <button id="delColorUrl">Remove</button>
+        </div>
+      </p>
+    </div>
 
-</p>
-  </div>
+    <div class="sidebar_content" id="settings_panel_about">
+    </div>
 
-
-  <div class="sidebar_content" id="settings_panel_about">
-  </div>
-
-  <div class="controls">
-<button class="save">Save Changes</button> 
-<button class="cancel">Cancel</button> 
-  </div>
+    <div class="controls">
+      <button class="save">Save Changes</button> 
+      <button class="cancel">Cancel</button> 
+    </div>
   </form>
-
-
-
-  </div>
+</div>
 
 <style>
 .modal.span12{margin-left:-470px;width:940px;}
@@ -250,106 +367,6 @@
      overflow-y: auto;
 }
 </style>
-<div id="p2ptrade" class="modal scroll hide span10" role="dialog">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>p2ptrade</h3>
-  </div>
-  <div class="container">
-    <div class="row">
-      <div class="span4">
-        <div class="well well-small">
-          <h4>Buy <span class="colorind"></span></h4>
-          <form class="form-inline">
-            <label class="control-label" for="quantity">Quantity (units)</label>
-            <input type="text" id="buyamt" class="span2" value="1" />
-            <label class="control-label" for="price">Price (BTC/unit)</label>
-            <input type="text" id="buyprice" class="span2" value="0.001" />
-            <p>Total BTC:</p>
-            
-            <button id="buy-button" class="btn btn-primary btn-block">Buy</button>
-          </form>
-        </div>
-      </div>
-      <div class="span4">
-        <div class="well well-small">
-          <h4>Sell <span class="colorind"></span></h4>
-          <form class="form-inline">
-            <label class="control-label" for="quantity">Quantity (units)</label>
-            <input type="text" id="sellamt" class="span2" value="1" />
-            <label class="control-label" for="price">Price (BTC/unit)</label>
-            <input type="text" id="sellprice" class="span2" value="0.001" />
-            <p>Total BTC:</p>
-            
-            <button id="sell-button" class="btn btn-primary btn-block">Sell</button>
-          </form>
-        </div>
-     </div>
-    </div>
-    
-    <div class="row">
-      <div class="span4">
-        <div class="well well-small">
-          <h4>My Bids:</h4>
-          <table class="table table-bordered table-hover table-condensed">
-            <thead>
-                <tr>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody id="my_p2p_bids">
-              </tbody>
-          </table>        
-  
-          <h4>Bids:</h4>
-  
-          <table class="table table-bordered table-hover table-condensed">
-            <thead>
-                <tr>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody id="p2p_bids">
-              </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="span4">
-        <div class="well well-small">
-          <h4>My Asks:</h4>
-          
-          <table class="table table-bordered table-hover table-condensed">
-            <thead>
-                <tr>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody id="my_p2p_asks">
-              </tbody>
-          </table>
-  
-          <h4>Asks:</h4>
-          
-          <table class="table table-bordered table-hover table-condensed">
-            <thead>
-                <tr>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody id="p2p_asks">
-              </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  
-  </div> <!-- /container -->
-
-</div> <!-- /modal -->
 <!--
 <a href="https://github.com/bitcoinx/webcoinx"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 -->

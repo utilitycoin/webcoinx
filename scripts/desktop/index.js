@@ -15,23 +15,387 @@ define([
     "../wallets/miniwallet"
 ], function ($, WalletManager, ExitNode, TransactionView, setCommonBindings, ColorMan, P2pgui) {
     'use strict';
-    var initHtmlPage = function () {
-        $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
-        var html = new EJS({url: 'views/layout.ejs'}).render();
-        $("body").html(html);
+    var makeIssueController = function (wallet, cfg, wm, colorMan, colordefServers, allowedColors, exitNode, reload_colors) {
 
-        // CSS tweaks
-        $('#header #nav li:last').addClass('nobg');
-        $('.block_head ul').each(function () { $('li:first', this).addClass('nobg'); });
+/*
+        var issueDialog = $('#dialog_issue_money').dialog({
+            autoOpen: false,
+            minWidth: 550,
+            resizable: false
+        });
+*/
+        var issueDialog = $('#dialog_issue_money'),
+            reset = function () {
+                issueDialog.find('.entry').show();
+                issueDialog.find('.confirm, .loading').hide();
+                issueDialog.find('.dialog_issue_name').focus();
+                issueDialog.find('#dialog_issue_name').val('');
+                issueDialog.find('#dialog_issue_amount').val('');
+                issueDialog.find('#dialog_issue_unit').val('10000');
+                issueDialog.find('.messages').empty();
+            },
+            activate = function () {
+                //var an = getColor()?autoNumericColor:autoNumericBtc;
+                //sendDialog.find('.amount').autoNumeric(an);
+                //issueDialog.dialog('open');
+            },
+            update_issue_cost = function () {
+                function set(s) {
+                    if (!s) {
+                        s = "amount X unit";
+                    }
+                    $('#issue_cost').html(s);
+                }
+                var amount_s = String($.fn.autoNumeric.Strip("dialog_issue_amount"));
+                if (!amount_s) {
+                    return set();
+                }
+                var amount = Bitcoin.Util.parseValue(amount_s, 1);
+                if (amount.compareTo(BigInteger.ZERO) <= 0) {
+                    return set();
+                }
+                var unit_s = String($.fn.autoNumeric.Strip("dialog_issue_unit"));
+                if (!unit_s) {
+                    return set();
+                }
+                var unit = Bitcoin.Util.parseValue(unit_s, 1);
+                if (unit.compareTo(BigInteger.ZERO) <= 0) {
+                    return set();
+                }
+                var cost = amount.multiply(unit);
+                var cost_s = Bitcoin.Util.formatValue(cost);
+                if (cost.compareTo(wallet.getBalance()) > 0) {
+                    cost_s = "<span style='color:red'>" + cost_s + "</span>";
+                }
+                return set(cost_s);
+            },
+            initIssueEventHandlers = function () {
+                issueDialog.find('.cancel').click(function (e) {
+                    e.preventDefault();
+                    //issueDialog.dialog('close');
+                    reset();
+                });
+                issueDialog.find('.cancel_confirm').click(function (e) {
+                    e.preventDefault();
+                    issueDialog.find('.entry').show();
+                    issueDialog.find('.confirm, .loading').hide();
+                });
+                issueDialog.find('#dialog_issue_amount').change(update_issue_cost);
+                issueDialog.find('#dialog_issue_amount').keyup(update_issue_cost);
+                issueDialog.find('#dialog_issue_unit').change(update_issue_cost);
+                issueDialog.find('#dialog_issue_unit').keyup(update_issue_cost);
+            },
+            doIssue = function () {
 
-        // Button styling
-        $('button')
-            .button()
-            .filter('#nav_send_money')
-            .button('option', 'icons', {primary: "icon-bitcoin-send"})
-            .end();
+                var msgHub = issueDialog.find('.messages');
+                msgHub.empty();
+
+                function validateError(msg) {
+                    var msgObj = Message.create(msg, "error");
+                    msgObj.appendTo(msgHub);
+                }
+
+                var name = issueDialog.find('#dialog_issue_name').val();
+                name = name.replace(/^\s+/, "").replace(/\s+$/, "");
+
+                if (!name.length) {
+                    validateError("Please enter name of issued asset.");
+                    return;
+                }
+
+                // Safe conversion from double to BigInteger
+                var amount_s = String($.fn.autoNumeric.Strip("dialog_issue_amount"));
+                if (!amount_s) {
+                    validateError("Please enter an amount.");
+                    return;
+                }
+
+                var amount = Bitcoin.Util.parseValue(amount_s, 1);
+
+                if (amount.compareTo(BigInteger.ZERO) <= 0) {
+                    validateError("Please enter a positive amount of " + name);
+                    return;
+                }
+
+                var unit_s = String($.fn.autoNumeric.Strip("dialog_issue_unit"));
+                if (!unit_s) {
+                    validateError("Please enter an unit size in satoshi.");
+                    return;
+                }
+
+                var unit = Bitcoin.Util.parseValue(unit_s, 1);
+
+                if (unit.compareTo(BigInteger.ZERO) <= 0) {
+                    validateError("Please enter a positive amount of satoshi per unit");
+                    return;
+                }
+
+                var cost = amount.multiply(unit);
+                if (cost.compareTo(wallet.getBalance()) > 0) {
+                    validateError("You have insufficient BTC for this issue.");
+                    return;
+                }
+
+                var cost_s = Bitcoin.Util.formatValue(cost);
+                issueDialog.find('.confirm_issue_amount').text(amount_s);
+                issueDialog.find('.confirm_issue_name').text(name);
+                issueDialog.find('.confirm_issue_cost').text(cost_s);
+
+                issueDialog.find('.confirm').show();
+                issueDialog.find('.entry, .loading').hide();
+
+                var confirmButton = issueDialog.find('.confirm_issue');
+                confirmButton.unbind('click');
+                confirmButton.click(function () {
+                    var tx;
+                    try {
+                        tx = wallet.createSend(wallet.getCurAddress(), cost, Bitcoin.Util.parseValue(String(cfg.get('fee'))), false);
+                    } catch (e) {
+                        alert(e.message);
+                        return;
+                    }
+                    wm.save(); // dont forget change addresses
+                    var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
+
+                    issueDialog.find('.loading').show();
+                    issueDialog.find('.entry, .confirm').hide();
+
+                    issueDialog.find('.loading p').text("Issuing coins...");
+
+                    // issue color, send transaction
+                    colorMan.issue(colordefServers, name, unit_s, Crypto.util.bytesToHex(tx.getHash().reverse()), function (colorid, stat, xhr) {
+                        if (!colorid || colorid.length !== 40) {
+                            validateError("Remote error while processing issuing transaction, cancelled");
+                            return;
+                        }
+
+                        allowedColors[colorid] = true;
+                        cfg.apply({allowedColors: allowedColors});
+                        var txHash = Crypto.util.bytesToBase64(tx.getHash());
+                        $(exitNode).bind('txNotify', function callback(e) {
+                            if (e.tx.hash === txHash) {
+                                $(exitNode).unbind('txNotify', callback);
+                                // Our transaction
+                                //issueDialog.dialog('close');
+                                setTimeout(function () {
+                                    reset();
+                                    reload_colors();
+                                }, 1000);
+                            }
+                        });
+
+                        exitNode.call("txSend", {tx: txBase64}, function (err) {
+                            if (err) {
+                                validateError("Error while processing issuing transaction. ");
+
+                                //                            validateError("Error while processing issuing transaction: " +
+                                //                                                data.error.message);
+                                return;
+                            }
+                            issueDialog.find('.loading p').text("Awaiting reply...");
+                        });
+                    });
+                });
+            };
+
+        issueDialog.find('.issue').click(function (e) {
+            e.preventDefault();
+            doIssue();
+        });
+        reset();
+        initIssueEventHandlers();
+        return {
+            activate: activate
+        };
     },
-        initMessages = function () {
+        makeSendController = function (wallet, cfg, wm, colorMan, exitNode, getColor, getColorName) {
+            // Send Money Dialog
+            //        var sendDialog = $('#dialog_send_money').dialog({
+            //            autoOpen: false,
+            //            minWidth: 550,
+            //            resizable: false
+            //        });
+
+
+            //        $('#nav_issue_money').click(function (e) {
+            //            e.preventDefault();
+            //            activateIssueDialog();
+            //        });
+
+            var sendDialog = $('#dialog_send_money'),
+                reset = function () {
+//                    sendDialog.dialog('open');
+                    sendDialog.find('.entry').show();
+                    sendDialog.find('.confirm, .loading').hide();
+                    sendDialog.find('.amount').val('').focus();
+                    sendDialog.find('.address').val('');
+                    sendDialog.find('.messages').empty();
+                };
+
+//            $('#nav_send_money').click(function (e) {
+//                e.preventDefault();
+//                //var an = getColor()?autoNumericColor:autoNumericBtc;
+//                //sendDialog.find('.amount').autoNumeric(an);
+//                reset();
+//            });
+            sendDialog.find('.cancel').click(function (e) {
+                e.preventDefault();
+                //sendDialog.dialog('close');
+                reset();
+            });
+            sendDialog.find('.cancel_confirm').click(function (e) {
+                e.preventDefault();
+                sendDialog.find('.entry').show();
+                sendDialog.find('.confirm, .loading').hide();
+            });
+            sendDialog.find('.send').click(function (e) {
+                e.preventDefault();
+                var msgHub = sendDialog.find('.messages');
+                msgHub.empty();
+
+                function validateError(msg) {
+                    var msgObj = Message.create(msg, "error");
+                    msgObj.appendTo(msgHub);
+                }
+
+                // Safe conversion from double to BigInteger
+                var valueString = String($.fn.autoNumeric.Strip("dialog_send_money_amount"));
+                if (!valueString) {
+                    validateError("Please enter an amount.");
+                    return;
+                }
+
+                var value = Bitcoin.Util.parseValue(valueString, getColor());
+
+                if (value.compareTo(BigInteger.ZERO) <= 0) {
+                    validateError("Please enter a positive amount of " + (getColorName()));
+                    return;
+                }
+
+                var rcpt = sendDialog.find('.address').val();
+
+                // Trim address
+                rcpt = rcpt.replace(/^\s+/, "").replace(/\s+$/, "");
+                if (!rcpt) {
+                    validateError("Enter address");
+                    return;
+                }
+                var cid = getColor();
+                if (cid) {
+                    if (rcpt.indexOf(cid + '@') !== 0) {
+                        validateError("Please use correct color address to prevent accidents");
+                        return;
+                    }
+                    // sha256 + @
+                    rcpt = rcpt.slice(41);
+                    cid = colorMan.cmap(cid);
+                    console.log('@@CID2');
+                    console.log(cid);
+                    value = value.multiply(Bitcoin.Util.parseValue(cid.unit, 1));
+                }
+
+                if (value.compareTo(wallet.getBalance(getColor())) > 0) {
+                    validateError("You have insufficient funds for this transaction.");
+                    return;
+                }
+
+                if (!rcpt.length) {
+                    validateError("Please enter the Bitcoin address of the recipient.");
+                    return;
+                }
+
+                try {
+                    var pubKeyHash = Bitcoin.Address.decodeString(rcpt);
+                } catch (err) {
+                    validateError("Bitcoin address invalid, please double-check.");
+                    return;
+                }
+
+                sendDialog.find('.confirm_amount').text(valueString + ' ' + getColorName());
+                sendDialog.find('.confirm_address').text(rcpt);
+
+                sendDialog.find('.confirm').show();
+                sendDialog.find('.entry, .loading').hide();
+
+                var confirmButton = sendDialog.find('.confirm_send');
+                confirmButton.unbind('click');
+                confirmButton.click(function () {
+                    var tx;
+                    try {
+                        tx = wallet.createSend(new Bitcoin.Address(rcpt), value, Bitcoin.Util.parseValue(String(cfg.get('fee'))), getColor());
+                    } catch (e) {
+                        alert(e.message);
+                        return;
+                    }
+                    wm.save(); // dont forget change addresses
+                    var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
+
+                    sendDialog.find('.loading').show();
+                    sendDialog.find('.entry, .confirm').hide();
+
+                    sendDialog.find('.loading p').text("Sending coins...");
+
+                    var txHash = Crypto.util.bytesToBase64(tx.getHash());
+                    $(exitNode).bind('txNotify', function callback(e) {
+                        if (e.tx.hash === txHash) {
+                            $(exitNode).unbind('txNotify', callback);
+                            // Our transaction
+                            //sendDialog.dialog('close');
+                            reset();
+                            $('#tab-transactions').click();
+                        }
+                    });
+
+                    exitNode.call("txSend", {tx: txBase64}, function (err) {
+                        if (err) {
+                            validateError("Error sending transaction: ");
+                            //                        validateError("Error sending transaction: " +
+                            //                                      data.error.message);
+                            return;
+                        }
+                        sendDialog.find('.loading p').text("Awaiting reply...");
+                    });
+                });
+            });
+
+            reset();
+            return {
+            };
+        },
+        issueController,
+        sendController,
+        initHtmlPage = function () {
+            $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
+            var html = new EJS({url: 'views/layout.ejs'}).render();
+            $("body").html(html);
+
+            // CSS tweaks
+            $('#header #nav li:last').addClass('nobg');
+            $('.block_head ul').each(function () { $('li:first', this).addClass('nobg'); });
+
+            // Button styling
+            $('button')
+                .button()
+                .filter('#nav_send_money')
+                .button('option', 'icons', {primary: "icon-bitcoin-send"})
+                .end();
+
+            $('#tabs').tabs({
+                activate: function (event, ui) {
+                    console.log("tab activate", ui);
+                    if ($(ui.newPanel).is('#panel-issue')) {
+                        issueController.activate();
+                        // var issueDialog = $('#dialog_issue_money');
+                        // issueDialog.find('.entry').show();
+                        // issueDialog.find('.confirm, .loading').hide();
+                        // issueDialog.find('.dialog_issue_name').focus();
+                        // issueDialog.find('#dialog_issue_unit').val('10000');
+                        // issueDialog.find('.messages').empty();
+                    }
+                }
+            });
+        },
+        initmessages = function () {
             // Messages
             $('.block .message').hide().append('<span class="close" title="Dismiss"></span>').fadeIn('slow');
             $('.block .message .close').hover(
@@ -333,318 +697,18 @@ define([
             }
         );
 
+        // $('#nav_p2ptrade').click(function (e) {
+        //     e.preventDefault();
+        //     $('#p2ptrade').modal();
+        // });
 
-        $('#nav_p2ptrade').click(function (e) {
-            e.preventDefault();
-            $('#p2ptrade').modal();
-        });
+        issueController = makeIssueController(wallet, cfg, wm, colorMan,
+                                              colordefServers,
+                                              allowedColors,
+                                              exitNode, reload_colors);
 
-        // Send Money Dialog
-        var sendDialog = $('#dialog_send_money').dialog({
-            autoOpen: false,
-            minWidth: 550,
-            resizable: false
-        });
-
-        var issueDialog = $('#dialog_issue_money').dialog({
-            autoOpen: false,
-            minWidth: 550,
-            resizable: false
-        });
-
-        $('#nav_issue_money').click(function (e) {
-            e.preventDefault();
-            //var an = getColor()?autoNumericColor:autoNumericBtc;
-            //sendDialog.find('.amount').autoNumeric(an);
-            issueDialog.dialog('open');
-            issueDialog.find('.entry').show();
-            issueDialog.find('.confirm, .loading').hide();
-            issueDialog.find('.dialog_issue_name').focus();
-            issueDialog.find('#dialog_issue_unit').val('10000');
-            issueDialog.find('.messages').empty();
-        });
-        issueDialog.find('.cancel').click(function (e) {
-            e.preventDefault();
-            issueDialog.dialog('close');
-        });
-        issueDialog.find('.cancel_confirm').click(function (e) {
-            e.preventDefault();
-            issueDialog.find('.entry').show();
-            issueDialog.find('.confirm, .loading').hide();
-        });
-        function update_issue_cost() {
-            function set(s) {
-                if (!s) {
-                    s = "amount X unit";
-                }
-                $('#issue_cost').html(s);
-            }
-            var amount_s = String($.fn.autoNumeric.Strip("dialog_issue_amount"));
-            if (!amount_s) {
-                return set();
-            }
-            var amount = Bitcoin.Util.parseValue(amount_s, 1);
-            if (amount.compareTo(BigInteger.ZERO) <= 0) {
-                return set();
-            }
-            var unit_s = String($.fn.autoNumeric.Strip("dialog_issue_unit"));
-            if (!unit_s) {
-                return set();
-            }
-            var unit = Bitcoin.Util.parseValue(unit_s, 1);
-            if (unit.compareTo(BigInteger.ZERO) <= 0) {
-                return set();
-            }
-            var cost = amount.multiply(unit);
-            var cost_s = Bitcoin.Util.formatValue(cost);
-            if (cost.compareTo(wallet.getBalance()) > 0) {
-                cost_s = "<span style='color:red'>" + cost_s + "</span>";
-            }
-            return set(cost_s);
-        }
-        issueDialog.find('#dialog_issue_amount').change(update_issue_cost);
-        issueDialog.find('#dialog_issue_amount').keyup(update_issue_cost);
-        issueDialog.find('#dialog_issue_unit').change(update_issue_cost);
-        issueDialog.find('#dialog_issue_unit').keyup(update_issue_cost);
-
-        issueDialog.find('.issue').click(function (e) {
-            e.preventDefault();
-            var msgHub = issueDialog.find('.messages');
-            msgHub.empty();
-
-            function validateError(msg) {
-                var msgObj = Message.create(msg, "error");
-                msgObj.appendTo(msgHub);
-            }
-
-            var name = issueDialog.find('#dialog_issue_name').val();
-            name = name.replace(/^\s+/, "").replace(/\s+$/, "");
-
-            if (!name.length) {
-                validateError("Please enter name of issued asset.");
-                return;
-            }
-
-            // Safe conversion from double to BigInteger
-            var amount_s = String($.fn.autoNumeric.Strip("dialog_issue_amount"));
-            if (!amount_s) {
-                validateError("Please enter an amount.");
-                return;
-            }
-
-            var amount = Bitcoin.Util.parseValue(amount_s, 1);
-
-            if (amount.compareTo(BigInteger.ZERO) <= 0) {
-                validateError("Please enter a positive amount of " + name);
-                return;
-            }
-
-
-            var unit_s = String($.fn.autoNumeric.Strip("dialog_issue_unit"));
-            if (!unit_s) {
-                validateError("Please enter an unit size in satoshi.");
-                return;
-            }
-
-            var unit = Bitcoin.Util.parseValue(unit_s, 1);
-
-            if (unit.compareTo(BigInteger.ZERO) <= 0) {
-                validateError("Please enter a positive amount of satoshi per unit");
-                return;
-            }
-
-            var cost = amount.multiply(unit);
-            if (cost.compareTo(wallet.getBalance()) > 0) {
-                validateError("You have insufficient BTC for this issue.");
-                return;
-            }
-
-            var cost_s = Bitcoin.Util.formatValue(cost);
-            issueDialog.find('.confirm_issue_amount').text(amount_s);
-            issueDialog.find('.confirm_issue_name').text(name);
-            issueDialog.find('.confirm_issue_cost').text(cost_s);
-
-            issueDialog.find('.confirm').show();
-            issueDialog.find('.entry, .loading').hide();
-
-            var confirmButton = issueDialog.find('.confirm_issue');
-            confirmButton.unbind('click');
-            confirmButton.click(function () {
-                var tx;
-                try {
-                    tx = wallet.createSend(wallet.getCurAddress(), cost, Bitcoin.Util.parseValue(String(cfg.get('fee'))), false);
-                } catch (e) {
-                    alert(e.message);
-                    return;
-                }
-                wm.save(); // dont forget change addresses
-                var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
-
-                issueDialog.find('.loading').show();
-                issueDialog.find('.entry, .confirm').hide();
-
-                issueDialog.find('.loading p').text("Issuing coins...");
-
-                // issue color, send transaction
-                colorMan.issue(colordefServers, name, unit_s, Crypto.util.bytesToHex(tx.getHash().reverse()), function (colorid, stat, xhr) {
-                    if (!colorid || colorid.length !== 40) {
-                        validateError("Remote error while processing issuing transaction, cancelled");
-                        return;
-                    }
-
-                    allowedColors[colorid] = true;
-                    cfg.apply({allowedColors: allowedColors});
-                    var txHash = Crypto.util.bytesToBase64(tx.getHash());
-                    $(exitNode).bind('txNotify', function (e) {
-                        if (e.tx.hash === txHash) {
-                            // Our transaction
-                            issueDialog.dialog('close');
-                            $(exitNode).unbind('txNotify', arguments.callee);
-                            setTimeout(reload_colors, 1000);
-                        }
-                    });
-
-                    exitNode.call("txSend", {tx: txBase64}, function (err) {
-                        if (err) {
-                            validateError("Error while processing issuing transaction. ");
-
-//                            validateError("Error while processing issuing transaction: " +
-//                                                data.error.message);
-                            return;
-                        }
-                        issueDialog.find('.loading p').text("Awaiting reply...");
-                    });
-                });
-            });
-        });
-
-        $('#nav_send_money').click(function (e) {
-            e.preventDefault();
-            //var an = getColor()?autoNumericColor:autoNumericBtc;
-            //sendDialog.find('.amount').autoNumeric(an);
-            sendDialog.dialog('open');
-            sendDialog.find('.entry').show();
-            sendDialog.find('.confirm, .loading').hide();
-            sendDialog.find('.amount').focus();
-            sendDialog.find('.address').val('');
-            sendDialog.find('.messages').empty();
-        });
-        sendDialog.find('.cancel').click(function (e) {
-            e.preventDefault();
-            sendDialog.dialog('close');
-        });
-        sendDialog.find('.cancel_confirm').click(function (e) {
-            e.preventDefault();
-            sendDialog.find('.entry').show();
-            sendDialog.find('.confirm, .loading').hide();
-        });
-        sendDialog.find('.send').click(function (e) {
-            e.preventDefault();
-            var msgHub = sendDialog.find('.messages');
-            msgHub.empty();
-
-            function validateError(msg) {
-                var msgObj = Message.create(msg, "error");
-                msgObj.appendTo(msgHub);
-            }
-
-            // Safe conversion from double to BigInteger
-            var valueString = String($.fn.autoNumeric.Strip("dialog_send_money_amount"));
-            if (!valueString) {
-                validateError("Please enter an amount.");
-                return;
-            }
-
-            var value = Bitcoin.Util.parseValue(valueString, getColor());
-
-            if (value.compareTo(BigInteger.ZERO) <= 0) {
-                validateError("Please enter a positive amount of " + (getColorName()));
-                return;
-            }
-
-            var rcpt = sendDialog.find('.address').val();
-
-            // Trim address
-            rcpt = rcpt.replace(/^\s+/, "").replace(/\s+$/, "");
-            if (!rcpt) {
-                validateError("Enter address");
-                return;
-            }
-            var cid = getColor();
-            if (cid) {
-                if (rcpt.indexOf(cid + '@') !== 0) {
-                    validateError("Please use correct color address to prevent accidents");
-                    return;
-                }
-                // sha256 + @
-                rcpt = rcpt.slice(41);
-                cid = colorMan.cmap(cid);
-                console.log('@@CID2');
-                console.log(cid);
-                value = value.multiply(Bitcoin.Util.parseValue(cid.unit, 1));
-            }
-
-            if (value.compareTo(wallet.getBalance(getColor())) > 0) {
-                validateError("You have insufficient funds for this transaction.");
-                return;
-            }
-
-            if (!rcpt.length) {
-                validateError("Please enter the Bitcoin address of the recipient.");
-                return;
-            }
-
-            try {
-                var pubKeyHash = Bitcoin.Address.decodeString(rcpt);
-            } catch (err) {
-                validateError("Bitcoin address invalid, please double-check.");
-                return;
-            }
-
-            sendDialog.find('.confirm_amount').text(valueString + ' ' + getColorName());
-            sendDialog.find('.confirm_address').text(rcpt);
-
-            sendDialog.find('.confirm').show();
-            sendDialog.find('.entry, .loading').hide();
-
-            var confirmButton = sendDialog.find('.confirm_send');
-            confirmButton.unbind('click');
-            confirmButton.click(function () {
-                var tx;
-                try {
-                    tx = wallet.createSend(new Bitcoin.Address(rcpt), value, Bitcoin.Util.parseValue(String(cfg.get('fee'))), getColor());
-                } catch (e) {
-                    alert(e.message);
-                    return;
-                }
-                wm.save(); // dont forget change addresses
-                var txBase64 = Crypto.util.bytesToBase64(tx.serialize());
-
-                sendDialog.find('.loading').show();
-                sendDialog.find('.entry, .confirm').hide();
-
-                sendDialog.find('.loading p').text("Sending coins...");
-
-                var txHash = Crypto.util.bytesToBase64(tx.getHash());
-                $(exitNode).bind('txNotify', function (e) {
-                    if (e.tx.hash === txHash) {
-                        // Our transaction
-                        sendDialog.dialog('close');
-                        $(exitNode).unbind('txNotify', arguments.callee);
-                    }
-                });
-
-                exitNode.call("txSend", {tx: txBase64}, function (err) {
-                    if (err) {
-                        validateError("Error sending transaction: ");
-//                        validateError("Error sending transaction: " +
-//                                      data.error.message);
-                        return;
-                    }
-                    sendDialog.find('.loading p').text("Awaiting reply...");
-                });
-            });
-        });
+        sendController = makeSendController(wallet, cfg, wm, colorMan,
+                                            exitNode, getColor, getColorName);
 
         // Transaction Viewer Dialog
         var al = $('#address_load').dialog({ autoOpen: false, minWidth: 500 });
