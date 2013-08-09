@@ -19,8 +19,8 @@ define([
         makeColorSelector = function (allowedColors) {
             var api,
                 CHANGE_EVENT = "change",
-                color,
-                colorName,
+                color = '',
+                colorName = 'BTC',
                 getColor = function () {
                     return color;
                     //return $('#color_selector option:selected').val();
