@@ -463,6 +463,8 @@ define([
             $('.block_head ul').each(function () { $('li:first', this).addClass('nobg'); });
 
             // // Button styling
+            $('button').button()
+
             // $('button')
             //     .button()
             //     .filter('#nav_send_money')
