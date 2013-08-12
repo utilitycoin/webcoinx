@@ -17,25 +17,23 @@ define([
     "desktop/send-panel",
     "desktop/transaction-panel",
     "../wallets/miniwallet"
-],
-function ($, 
-          WalletManager,
-          ExitNode,
-          TransactionView,
-          setCommonBindings,
-          ColorMan,
-          P2pgui,
-          ColorSelector,
-	  IssuePanel,
-	  SendPanel,
-	  TransactionPanel,
-	  MiniWallet
-) {
+], function ($,
+             WalletManager,
+             ExitNode,
+             TransactionView,
+             setCommonBindings,
+             ColorMan,
+             P2pgui,
+             ColorSelector,
+             IssuePanel,
+             SendPanel,
+             TransactionPanel,
+             MiniWallet) {
     'use strict';
     var colorSelector,
         issuePanel,
         sendPanel,
-	transactionPanel,
+        transactionPanel,
         initHtmlPage = function () {
             $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
             var html = new EJS({url: 'views/layout.ejs'}).render();
@@ -46,7 +44,7 @@ function ($,
             $('.block_head ul').each(function () { $('li:first', this).addClass('nobg'); });
 
             // // Button styling
-            $('button').button()
+            $('button').button();
 
             // $('button')
             //     .button()
@@ -329,8 +327,8 @@ function ($,
 
         sendPanel = SendPanel.makeSendPanel(wallet, cfg, wm, colorMan,
                                             exitNode, colorSelector);
-	
-	transactionPanel = TransactionPanel.makeTransactionPanel();
+
+        transactionPanel = TransactionPanel.makeTransactionPanel();
 
         // Settings Dialog
         var cfgd = $('#dialog_settings'), i;

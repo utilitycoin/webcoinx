@@ -29,13 +29,13 @@ define([
                         // TODO: handle
                         return;
                     }
-                    var hashes = [], i;
+                    var hashes = [], i, transactionDb, transactionView;
                     for (i = 0; i < data.txs.length; i = i + 1) {
                         hashes.push(data.txs[i].hash);
                     }
                     al.find('.query, .progress').hide();
-                    var transactionDb = new TransactionDatabase();
-                    var transactionView = new TransactionView(al.find('.result').show().find('.txs'));
+                    transactionDb = new TransactionDatabase();
+                    transactionView = new TransactionView(al.find('.result').show().find('.txs'));
                     transactionView.setDatabase(transactionDb);
                     transactionDb.loadTransactions(data.txs);
                 }, 'json');
