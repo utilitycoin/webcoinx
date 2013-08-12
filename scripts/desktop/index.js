@@ -16,6 +16,7 @@ define([
     "desktop/issue-panel",
     "desktop/send-panel",
     "desktop/transaction-panel",
+    "desktop/settings-dialog",
     "../wallets/miniwallet"
 ], function ($,
              WalletManager,
@@ -28,12 +29,14 @@ define([
              IssuePanel,
              SendPanel,
              TransactionPanel,
+	     SettingsDialog,
              MiniWallet) {
     'use strict';
     var colorSelector,
         issuePanel,
         sendPanel,
         transactionPanel,
+        settingsDialog,
         initHtmlPage = function () {
             $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
             var html = new EJS({url: 'views/layout.ejs'}).render();
@@ -330,71 +333,12 @@ define([
 
         transactionPanel = TransactionPanel.makeTransactionPanel();
 
-        // Settings Dialog
-        var cfgd = $('#dialog_settings'), i;
-        $('#color_multiselect').multiselect().on('multiselectChange', function (evt, ui) {
-            for (i = 0; i < ui.optionElements.length; i = i + 1) {
-                var c = ui.optionElements[i];
-                allowedColors[c.value] = ui.selected;
-                $('#colorUrl').val(c.parentElement.label);
-            }
-        });
-        cfgd.bind('dialogopen', function (e) {
-            // Populate fee field
-            var fee = $.fn.autoNumeric.Format('dialog_settings_fee', cfg.get('fee'), autoNumericBtc);
-            cfgd.find('#dialog_settings_fee').val(fee);
+        settingsDialog = SettingsDialog.makeSettingsDialog(allowedColors,
+							   colordefServers,
+							   cfg,
+							   autoNumericBtc,
+							   reload_colors);
 
-            // Populate exit node fields
-            cfgd.find('#dialog_settings_exitNodeHost').val(cfg.get('exitNodeHost'));
-
-//        reload_colors();
-//              cfgd.find('#dialog_settings_colordefServers').val(cfg.get('colordefServers'));
-        });
-
-
-        cfgd.find('#addColorUrl').click(function (e) {
-            var url = cfgd.find('#colorUrl').val();
-            if (colordefServers.indexOf(url) !== -1) {
-                return;
-            }
-            colordefServers = colordefServers + ' ' + url;
-            cfgd.find('#colorUrl').val('');
-            reload_colors();
-            return false;
-        });
-
-        cfgd.find('#delColorUrl').click(function (e) {
-            colordefServers = colordefServers.replace(' ' + cfgd.find('#colorUrl').val(), '');
-            cfgd.find('#colorUrl').val('');
-            reload_colors();
-            return false;
-        });
-
-        cfgd.find('.controls .save').click(function (e) {
-            cfgd.dialog('close');
-
-            var newSettings = {};
-
-            newSettings.fee = +$.fn.autoNumeric.Strip("dialog_settings_fee");
-            newSettings.exitNodeHost = cfgd.find('#dialog_settings_exitNodeHost').val();
-            newSettings.allowedColors = allowedColors;
-            newSettings.colordefServers = colordefServers;
-
-            cfg.apply(newSettings);
-            location.reload();
-            return false;
-        });
-        cfgd.find('.controls .cancel').click(function (e) {
-            cfgd.dialog('close');
-            return false;
-        });
-        cfgd.dialog({
-            dialogClass: "block withsidebar",
-            autoOpen: false,
-            minWidth: 600,
-            minHeight: 488,
-            resizable: false
-        });
         $(".sidebar_content").hide();
         $("ul.sidemenu li:first-child").addClass("active").show();
         $(".block .sidebar_content:first").show();
@@ -407,7 +351,7 @@ define([
             return false;
         });
         $('#nav .settings').click(function () {
-            cfgd.dialog('open');
+            settingsDialog.openDialog();
             return false;
         });
 
