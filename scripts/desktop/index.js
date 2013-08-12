@@ -15,7 +15,7 @@ define([
     "desktop/color-selector",
     "desktop/issue-panel",
     "desktop/send-panel",
-    "desktop/transaction",
+    "desktop/transaction-panel",
     "../wallets/miniwallet"
 ],
 function ($, 
