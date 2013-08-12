@@ -1,9 +1,12 @@
-/*jslint */
+/*jslint vars:true*/
+/*global define*/
+/*global Bitcoin, BigInteger, Message, Crypto */
+/*global alert*/
 define([
     "jquery"
 ], function ($) {
     "use strict";
-    var makeIssueController = function (wallet, cfg, wm, colorMan, colordefServers, allowedColors, exitNode, reload_colors) {
+    var makeIssuePanel = function (wallet, cfg, wm, colorMan, colordefServers, allowedColors, exitNode, reload_colors) {
 
 /*
         var issueDialog = $('#dialog_issue_money').dialog({
@@ -197,6 +200,6 @@ define([
         };
     };
     return {
-	makeIssueController: makeIssueController
+        makeIssuePanel: makeIssuePanel
     };
 });

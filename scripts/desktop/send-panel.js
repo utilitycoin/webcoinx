@@ -1,10 +1,12 @@
-/*jslint */
+/*jslint vars:true*/
 /*global define*/
+/*global Message, Bitcoin, BigInteger, Crypto*/
+/*global alert*/
 define([
     "jquery"
 ], function ($) {
     "use strict";
-    var makeSendController = function (wallet, cfg, wm, colorMan, exitNode, colorSelector) {
+    var makeSendPanel = function (wallet, cfg, wm, colorMan, exitNode, colorSelector) {
         // Send Money Dialog
         //        var sendDialog = $('#dialog_send_money').dialog({
         //            autoOpen: false,
@@ -159,7 +161,7 @@ define([
         };
     };
     return {
-        makeSendController: makeSendController
+        makeSendPanel: makeSendPanel
     };
 
 });

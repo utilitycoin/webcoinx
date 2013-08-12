@@ -13,8 +13,9 @@ define([
     "../colorman",
     "../p2ptrade/gui",
     "desktop/color-selector",
-    "desktop/issue",
-    "desktop/send",
+    "desktop/issue-panel",
+    "desktop/send-panel",
+    "desktop/transaction",
     "../wallets/miniwallet"
 ],
 function ($, 
@@ -26,13 +27,14 @@ function ($,
           P2pgui,
           ColorSelector,
 	  Issue,
-	  Send,
+	  SendPanel,
+	  TransactionPanel,
 	  MiniWallet
 ) {
     'use strict';
     var colorSelector,
-        issueController,
-        sendController,
+        issuePanel,
+        sendPanel,
         initHtmlPage = function () {
             $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
             var html = new EJS({url: 'views/layout.ejs'}).render();
@@ -55,7 +57,7 @@ function ($,
                 activate: function (event, ui) {
                     console.log("tab activate", ui);
                     if ($(ui.newPanel).is('#panel-issue')) {
-                        issueController.activate();
+                        issuePanel.activate();
                         // var issueDialog = $('#dialog_issue_money');
                         // issueDialog.find('.entry').show();
                         // issueDialog.find('.confirm, .loading').hide();
@@ -319,48 +321,15 @@ function ($,
         //     $('#p2ptrade').modal();
         // });
 
-        issueController = Issue.makeIssueController(wallet, cfg, wm, colorMan,
+        issuePanel = IssuePanel.makeIssuePanel(wallet, cfg, wm, colorMan,
                                               colordefServers,
                                               allowedColors,
                                               exitNode, reload_colors);
 
-        sendController = Send.makeSendController(wallet, cfg, wm, colorMan,
+        sendPanel = SendPanel.makeSendPanel(wallet, cfg, wm, colorMan,
                                             exitNode, colorSelector);
-
-        // Transaction Viewer Dialog
-        var al = $('#address_load').dialog({ autoOpen: false, minWidth: 500 });
-        $('#address_load_open, #address_load_reset').click(function () {
-            al.find('.progress, .result').hide();
-            al.find('.query').show();
-            $('#address_load').dialog('open');
-        });
-
-        $('#address_load_start').click(function () {
-            al.find('.query, .result').hide();
-            al.find('.progress').show().text('Loading transactions...');
-            var addresses = $('#addresses').val().split("\n").join(",");
-            $.get('/pubkeys/register', {keys: addresses}, function (data) {
-                if (data.error) {
-                    // TODO: handle
-                    return;
-                }
-                $.get('/pubkeys/gettxs', {handle: data.handle}, function (data) {
-                    if (data.error) {
-                        // TODO: handle
-                        return;
-                    }
-                    var hashes = [], i;
-                    for (i = 0; i < data.txs.length; i = i + 1) {
-                        hashes.push(data.txs[i].hash);
-                    }
-                    al.find('.query, .progress').hide();
-                    var transactionDb = new TransactionDatabase();
-                    var transactionView = new TransactionView(al.find('.result').show().find('.txs'));
-                    transactionView.setDatabase(transactionDb);
-                    transactionDb.loadTransactions(data.txs);
-                }, 'json');
-            });
-        });
+	
+	transactionPanel = TransactionPanel.makeTransactionPanel();
 
         // Settings Dialog
         var cfgd = $('#dialog_settings'), i;
