@@ -658,8 +658,9 @@ a:hover {
 .block form p {
 	overflow: hidden;
 	clear: both;
-	}
+}
 
+.block label,
 .block form label {
 	font-family: "Lucida Grande", Verdana, sans-serif;
 	font-size: 12px;
