@@ -26,7 +26,7 @@ function ($,
           ColorMan,
           P2pgui,
           ColorSelector,
-	  Issue,
+	  IssuePanel,
 	  SendPanel,
 	  TransactionPanel,
 	  MiniWallet
@@ -35,6 +35,7 @@ function ($,
     var colorSelector,
         issuePanel,
         sendPanel,
+	transactionPanel,
         initHtmlPage = function () {
             $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
             var html = new EJS({url: 'views/layout.ejs'}).render();
