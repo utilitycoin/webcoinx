@@ -25,11 +25,6 @@ define([
                 issueDialog.find('#dialog_issue_unit').val('10000');
                 issueDialog.find('.messages').empty();
             },
-            activate = function () {
-                //var an = getColor()?autoNumericColor:autoNumericBtc;
-                //sendDialog.find('.amount').autoNumeric(an);
-                //issueDialog.dialog('open');
-            },
             update_issue_cost = function () {
                 function set(s) {
                     if (!s) {
@@ -195,9 +190,6 @@ define([
         });
         reset();
         initIssueEventHandlers();
-        return {
-            activate: activate
-        };
     };
     return {
         makeIssuePanel: makeIssuePanel
