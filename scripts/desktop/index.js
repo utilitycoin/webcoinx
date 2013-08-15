@@ -70,7 +70,8 @@ define([
         var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                                     txDb, txMem, txView);
         var colorMan = new ColorMan(exitNode);
-        txView = new TransactionView($('#main_tx_list'), colorMan);
+
+        txView = new TransactionView($('#main_tx_list'));
         var colordefServers = cfg.get('colordefServers');
 
         var pgui = new P2pgui(wm, colorMan, exitNode, cfg);
@@ -229,11 +230,6 @@ define([
                 colorSelector.setColors(d);
             }
         );
-
-        // $('#nav_p2ptrade').click(function (e) {
-        //     e.preventDefault();
-        //     $('#p2ptrade').modal();
-        // });
 
         issuePanel = IssuePanel.makeIssuePanel(wallet, cfg, wm, colorMan,
                                               colordefServers,
