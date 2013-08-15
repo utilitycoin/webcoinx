@@ -4,8 +4,8 @@
 define([
     "jquery",
 ], function ($) {
-	'use strict';
-	var initHtmlPage = function () {
+    'use strict';
+    var initHtmlPage = function () {
             $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
             var html = new EJS({url: 'views/layout.ejs'}).render();
             $("body").html(html);
@@ -36,56 +36,21 @@ define([
                 $(this).parent().fadeOut('slow', function () { $(this).remove(); });
             });
         },
-        initAddress = function () {
-            // Address copy-to-clipboard
-            ZeroClipboard.setMoviePath('scripts/vendor/zeroclipboard/ZeroClipboard.swf');
-            var addrClip = new ZeroClipboard.Client();
-
-            // Address auto-selection
-            $('#addr').focus(function (e) {
-                this.select();
-            }).mouseup(function (e) {
-                this.select();
-                e.preventDefault();
-            }).change(function () {
-                var addr = $(this).addr();
-                addrClip.setText(addr);
-                addrClip.reposition();
-            });
-
-            //addrClip.glue('addr_clip', 'wallet_active');
-
-            // Disabling below, breaks Internet Explorer (addEventListener)
-            // Probably easy to fix with jquery.bind
-            // But: there is no #addr_clip button, so is this bitrot?
-            // However, the code still sometimes requires the addrClip object.
-
-            // var addrClipButton = $('#addr_clip');
-            //  addrClip.addEventListener( 'mouseOver', function(client) {
-            //     addrClipButton.addClass('ui-state-hover');
-            //  });
-
-            //  addrClip.addEventListener( 'mouseOut', function(client) {
-            //     addrClipButton.removeClass('ui-state-hover');
-            //  });
-
-            //  addrClip.addEventListener( 'mouseDown', function(client) {
-            //     addrClipButton.addClass('ui-state-focus');
-            //  });
-
-            //  addrClip.addEventListener( 'mouseUp', function(client) {
-            //     addrClipButton.removeClass('ui-state-focus');
-            //  });
+        setConnectionInfo = function (text) {
+            $('#exitnode_status').text(text);
         },
-		render = function () {
-			initHtmlPage();
-			initAddress();
-		};
+        setConnectionStatus = function (statusClass) {
+            $('#exitnode_status').removeClass('unknown error warning ok');
+            $('#exitnode_status').addClass(statusClass);
+        },
+        render = function () {
+            initHtmlPage();
+        };
 
 
-	return {
-		render: render
-	};
+    return {
+        render: render,
+        setConnectionInfo: setConnectionInfo,
+        setConnectionStatus: setConnectionStatus
+    };
 });
-
-

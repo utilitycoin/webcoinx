@@ -14,6 +14,7 @@ define([
     "../p2ptrade/gui",
     "desktop/color-selector",
     "desktop/issue-panel",
+    "desktop/overview-panel",
     "desktop/send-panel",
     "desktop/transaction-panel",
     "desktop/settings-dialog",
@@ -28,6 +29,7 @@ define([
              P2pgui,
              ColorSelector,
              IssuePanel,
+	     OverviewPanel,
              SendPanel,
              TransactionPanel,
 	     SettingsDialog,
@@ -70,13 +72,13 @@ define([
         var exitNode = new ExitNode(exitNodeHost, +exitNodePort, !!exitNodeSecure,
                                     txDb, txMem, txView);
         var colorMan = new ColorMan(exitNode);
-
-        txView = new TransactionView($('#main_tx_list'));
         var colordefServers = cfg.get('colordefServers');
 
+        txView = new TransactionView($('#main_tx_list'));
         var pgui = new P2pgui(wm, colorMan, exitNode, cfg);
-
         colorSelector = ColorSelector.makeColorSelector(allowedColors);
+
+        var overviewPanel = OverviewPanel.makeOverviewPanel();
 
         if (!cfg.get('have_wallet')) {
             setTimeout(function () {
@@ -111,11 +113,10 @@ define([
                         });
                 }
             );
-            $('#testnet_wallet').show();
+            overviewPanel.showTestnetWalletInfo();
         }
-
-        $('#exitnode_status').text(exitNodeHost);
-
+		
+		MainPage.setConnectionInfo(exitNodeHost);
 
         function mangle_addr(addr) {
             var color = colorSelector.getColor(); // '' = BTC
@@ -139,12 +140,13 @@ define([
                 //                      autoNumericColor.vMax = ''+v;
                 console.log(autoNumericColor);
             }
-            $('#wallet_active .balance .value').text(v);
-            $('#wallet_active .balance .unit').text(colorSelector.getColorName());
+			overviewPage.setBalance(v, colorSelector.getColorName());
 
             $('.colorind').text(colorSelector.getColorName());
+
             var addr = wallet.getCurAddress().toString();
-            $('#addr').val(mangle_addr(wallet.getCurAddress().toString()));
+			overviewPanel.setAddress(
+				mangle_addr(wallet.getCurAddress().toString()));
         }
 
         // UGLY UGLY UGLY UGLY
@@ -161,8 +163,7 @@ define([
 
         $(exitNode).bind('connectStatus', function (e) {
             console.log('connect', e);
-            $('#exitnode_status').removeClass('unknown error warning ok');
-            $('#exitnode_status').addClass(e.status);
+			MainPage.setConnectionStatus(e.status);
         });
 
         $(exitNode).bind('txData txAdd txNotify', function (e) {
@@ -170,22 +171,18 @@ define([
         });
 
         $(wm).bind('walletProgress', function (e) {
-            $("#wallet_init_status").text("Creating wallet " + e.n + "/" + e.total);
+            overviewPanel.setWalletInitInfo("Creating wallet " + e.n + "/" + e.total);
         });
 
         $(wm).bind('walletInit', function (e) {
-            $("#wallet_init_status").text("");
-            $('#wallet_active').show();
-            $('#wallet_init').hide();
+			overviewPanel.setWalletActiveState();
             wallet = e.newWallet.wallet;
             var addr = e.newWallet.wallet.getCurAddress().toString();
-            $('#addr').val(addr);
+			overviewPanel.setAddress(addr);
         });
 
         $(wm).bind('walletDeinit', function (e) {
-            $("#wallet_init_status").text("");
-            $('#wallet_active').hide();
-            $('#wallet_init').show();
+			overviewPanel.setWalletInitState();
         });
 
         // Load wallet if there is one
@@ -212,7 +209,7 @@ define([
         $('#wallet_active .new_addr').click(function (e) {
             e.preventDefault();
             var addr = mangle_addr(wallet.getNextAddress().toString());
-            $('#addr').val(addr);
+            overviewPanel.setAddress(addr);
             wm.save();
         });
 
