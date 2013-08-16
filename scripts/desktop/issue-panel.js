@@ -26,6 +26,7 @@ define([
                 issueDialog.find('.messages').empty();
             },
             update_issue_cost = function () {
+				var wallet = app.getWallet();
                 function set(s) {
                     if (!s) {
                         s = "amount X unit";
@@ -72,6 +73,7 @@ define([
                 issueDialog.find('#dialog_issue_unit').keyup(update_issue_cost);
             },
             doIssue = function () {
+				var wallet = app.getWallet();
 
                 var msgHub = issueDialog.find('.messages');
                 msgHub.empty();

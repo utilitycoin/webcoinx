@@ -1,14 +1,15 @@
 /*jslint vars:true*/
-/*global define, ZeroClipboard */
+/*global define, alert, ZeroClipboard */
 
 define([
     "jquery"
 ], function ($) {
     "use strict";
-	var initialize = function (cfg, wallet, overviewPanel) {
+	var initialize = function (cfg, app, overviewPanel) {
         if (cfg.get('addrType') === 0x6f) { // testnet
             $('#faucet').click(
                 function (e) {
+					var wallet = app.getWallet();
                     e.preventDefault();
                     if (!wallet) {
                         return;

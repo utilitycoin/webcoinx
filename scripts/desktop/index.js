@@ -78,6 +78,14 @@ define([
 
         txView = new TransactionView($('#main_tx_list'));
         var pgui = new P2pgui(wm, colorMan, exitNode, cfg);
+		
+		var app = {
+			getWallet : function () {
+				return wallet;
+			}
+		}
+
+
         colorSelector = ColorSelector.makeColorSelector(allowedColors);
 
         var overviewPanel = OverviewPanel.makeOverviewPanel();
@@ -92,7 +100,7 @@ define([
             }, 300);
         }
 
-		TestnetHandler.initialize(cfg, wallet, overviewPanel);
+		TestnetHandler.initialize(cfg, app, overviewPanel);
 
 		MainPage.setConnectionInfo(exitNodeHost);
 
@@ -193,12 +201,12 @@ define([
             colorSelector.setColors(d);
         });
 
-        issuePanel = IssuePanel.makeIssuePanel(wallet, cfg, wm, colorMan,
+        issuePanel = IssuePanel.makeIssuePanel(app, cfg, wm, colorMan,
                                               colordefServers,
                                               allowedColors,
                                               exitNode, reload_colors);
 
-        sendPanel = SendPanel.makeSendPanel(wallet, cfg, wm, colorMan,
+        sendPanel = SendPanel.makeSendPanel(app, cfg, wm, colorMan,
                                             exitNode, colorSelector);
 
         transactionPanel = TransactionPanel.makeTransactionPanel();
