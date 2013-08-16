@@ -166,7 +166,7 @@ define([
         wm.init();
 
         // Interface buttons
-		$(overviewPanel).bind(overviewPanel.events.NEW_ADDRESS_CLICK, function (e) {
+		$(overviewPanel).bind(overviewPanel.events.NEW_WALLET_CLICK, function (e) {
             if (prompt("WARNING: This action will make the application forget your current wallet. Unless you have the wallet backed up, this is final and means your balance will be lost forever!\n\nIF YOU ARE SURE, TYPE \"YES\".") === "YES") {
                 wm.createWallet({
                     'type': 'mini',
