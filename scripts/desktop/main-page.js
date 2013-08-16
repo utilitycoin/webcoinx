@@ -1,11 +1,12 @@
 /*jslint vars: true */
-/*global define, EJS, ZeroClipboard */
+/*global define, EJS */
 
 define([
     "jquery",
 ], function ($) {
     'use strict';
-    var initHtmlPage = function () {
+    var api,
+		initHtmlPage = function () {
             $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'stylesheets/desktop.css'));
             var html = new EJS({url: 'views/layout.ejs'}).render();
             $("body").html(html);
@@ -45,12 +46,18 @@ define([
         },
         render = function () {
             initHtmlPage();
+			$('#nav .settings').click(function () {
+				$(api).trigger(api.events.SETTINGS_CLICK);
+				return false;
+			});			
         };
-
-
-    return {
+	api = {
         render: render,
         setConnectionInfo: setConnectionInfo,
-        setConnectionStatus: setConnectionStatus
+        setConnectionStatus: setConnectionStatus,
+		events: {
+			SETTINGS_CLICK: "settings-clicko"
+		}
     };
+    return api;
 });

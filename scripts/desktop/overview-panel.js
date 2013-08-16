@@ -1,10 +1,12 @@
 /*jslint vars:true*/
-/*global define*/
+/*global define, ZeroClipboard */
+
 define([
     "jquery"
 ], function ($) {
     "use strict";
-	var initAddress = function () {
+	var api,
+		initAddress = function () {
             // Address copy-to-clipboard
             ZeroClipboard.setMoviePath('scripts/vendor/zeroclipboard/ZeroClipboard.swf');
             var addrClip = new ZeroClipboard.Client();
@@ -45,11 +47,25 @@ define([
             //     addrClipButton.removeClass('ui-state-focus');
             //  });
         },
+		exposeClickEvent = function (domSelector, eventName) {
+			$(domSelector).click(function (e) {
+				e.preventDefault();
+				$(api).trigger(eventName, e);
+			});
+		},
 	    init = function () {
 			initAddress();
+			exposeClickEvent('#wallet_active .new_addr',
+							 api.events.NEW_ADDRESS_CLICK);
+			exposeClickEvent('#wallet_active_recreate',
+							 api.events.NEW_WALLET_CLICK);
+
 		},
 		showTestnetWalletInfo = function () {
             $('#testnet_wallet').show();
+		},
+		hideTestnetWalletInfo = function () {
+            $('#testnet_wallet').hide();
 		},
         setWalletInitInfo = function (text) {
             $("#wallet_init_status").text(text);
@@ -71,16 +87,28 @@ define([
 		setAddress = function (text) {
 			$('#addr').val(text);
 		},
-		api = {
-			showTestnetWalletInfo: showTestnetWalletInfo,
-			setWalletInitInfo: setWalletInitInfo,
-			setWalletInitState: setWalletInitState,
-			setWalletActiveState: setWalletActiveState,
-			setBalance: setBalance,
-			setAddress: setAddress
+		showUpdatingBalance = function () {
+			$("#updating-balance").show();
+		},
+		hideUpdatingBalance = function () {
+			$("#updating-balance").hide();
 		};
 
-
+	api = {
+		events: {
+			NEW_ADDRESS_CLICK: "new-address-click",
+			NEW_WALLET_CLICK: "new-wallet-click"
+		},
+		showTestnetWalletInfo: showTestnetWalletInfo,
+		hideTestnetWalletInfo: hideTestnetWalletInfo,
+		setWalletInitInfo: setWalletInitInfo,
+		setWalletInitState: setWalletInitState,
+		setWalletActiveState: setWalletActiveState,
+		setBalance: setBalance,
+		setAddress: setAddress,
+		showUpdatingBalance: showUpdatingBalance,
+		hideUpdatingBalance: hideUpdatingBalance
+	};
 
 	return {
 		makeOverviewPanel: function () {

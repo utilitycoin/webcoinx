@@ -16,6 +16,7 @@ define([
     "desktop/issue-panel",
     "desktop/overview-panel",
     "desktop/send-panel",
+	"desktop/testnet-handler",
     "desktop/transaction-panel",
     "desktop/settings-dialog",
     "desktop/main-page",
@@ -29,11 +30,12 @@ define([
              P2pgui,
              ColorSelector,
              IssuePanel,
-	     OverviewPanel,
+			 OverviewPanel,
              SendPanel,
+			 TestnetHandler,
              TransactionPanel,
-	     SettingsDialog,
-	     MainPage,
+			 SettingsDialog,
+			 MainPage,
              MiniWallet) {
     'use strict';
     var colorSelector,
@@ -90,32 +92,8 @@ define([
             }, 300);
         }
 
-        if (cfg.get('addrType') === 0x6f) { // testnet
-            $('#faucet').click(
-                function (e) {
-                    e.preventDefault();
-                    if (!wallet) {
-                        return;
-                    }
-                    $.ajax(
-                        "http://devel.hz.udoidio.info/faucet",
-                        {
-                            type: 'POST',
-                            data: { address: wallet.getCurAddress().toString() }
-                        }
-                    )
-                        .done(function (data) {
-                            $('#testnet_wallet').hide();
-                            alert('You got 1 testnet Bitcoin, transaction id: ' + data);
-                        })
-                        .fail(function (e) {
-                            alert('Sorry, faucet failure:' + e.toString());
-                        });
-                }
-            );
-            overviewPanel.showTestnetWalletInfo();
-        }
-		
+		TestnetHandler.initialize(cfg, wallet, overviewPanel);
+
 		MainPage.setConnectionInfo(exitNodeHost);
 
         function mangle_addr(addr) {
@@ -128,9 +106,9 @@ define([
             console.log('@@@@' + color);
             pgui.setCurrentColor(color !== '' ? color : false, (color !== '') ? colorMan.cmap(color).unit.toString() : "1");
             if (wallet.dirty > 0) {
-                $("#updating-balance").show();
+                overviewPanel.showUpdatingBalance();
             } else {
-                $("#updating-balance").hide();
+                overviewPanel.hideUpdatingBalance();
             }
             var v = Bitcoin.Util.formatValue(colorMan.s2c(color, wallet.getBalance(color)));
             if (color) {
@@ -140,7 +118,7 @@ define([
                 //                      autoNumericColor.vMax = ''+v;
                 console.log(autoNumericColor);
             }
-			overviewPage.setBalance(v, colorSelector.getColorName());
+			overviewPanel.setBalance(v, colorSelector.getColorName());
 
             $('.colorind').text(colorSelector.getColorName());
 
@@ -157,7 +135,6 @@ define([
                 });
             });
         }
-
 
         setCommonBindings(cfg, wm, txDb, txMem, txView, exitNode, colorMan);
 
@@ -189,15 +166,7 @@ define([
         wm.init();
 
         // Interface buttons
-        $('#wallet_init_create').click(function (e) {
-            e.preventDefault();
-            wm.createWallet({
-                'type': 'mini',
-                'name': 'testing'
-            });
-        });
-        $('#wallet_active_recreate').click(function (e) {
-            e.preventDefault();
+		$(overviewPanel).bind(overviewPanel.events.NEW_ADDRESS_CLICK, function (e) {
             if (prompt("WARNING: This action will make the application forget your current wallet. Unless you have the wallet backed up, this is final and means your balance will be lost forever!\n\nIF YOU ARE SURE, TYPE \"YES\".") === "YES") {
                 wm.createWallet({
                     'type': 'mini',
@@ -206,8 +175,7 @@ define([
             }
         });
 
-        $('#wallet_active .new_addr').click(function (e) {
-            e.preventDefault();
+		$(overviewPanel).bind(overviewPanel.events.NEW_ADDRESS_CLICK, function (e) {
             var addr = mangle_addr(wallet.getNextAddress().toString());
             overviewPanel.setAddress(addr);
             wm.save();
@@ -221,12 +189,9 @@ define([
             updateBalance();
         });
 
-        $(colorMan).bind(
-            'colordefUpdate',
-            function (e, d) {
-                colorSelector.setColors(d);
-            }
-        );
+        $(colorMan).bind('colordefUpdate', function (e, d) {
+            colorSelector.setColors(d);
+        });
 
         issuePanel = IssuePanel.makeIssuePanel(wallet, cfg, wm, colorMan,
                                               colordefServers,
@@ -243,20 +208,11 @@ define([
 							   cfg,
 							   autoNumericBtc,
 							   reload_colors);
-        $('#nav .settings').click(function () {
+
+		$(MainPage).bind(MainPage.events.SETTINGS_CLICK, function () {
             settingsDialog.openDialog();
-            return false;
+			return false;
         });
 
-        /*
-        // Some testing code:
-        //$('#addr').text(Bitcoin.Base58.encode(Crypto.util.hexToBytes("0090fd25b15e497f5d0986bda9f7f98c1f8c8a73f6")));
-        var key = new Bitcoin.ECKey();
-        key.pub = Crypto.util.hexToBytes("046a76e56adf269cb896a7af1cdb01aa4acce82881a2696bc33a04aed20c176a44ed7bfbb10b91186f1a6b680daf000f742213bb3033b56c73695f357afc768781");
-        console.log(key.getBitcoinAddress().toString());
-
-        var addr = new Bitcoin.Address('1EDdZbvAJcxoHxJq6UDQGDtEQqgoT3XK3f');
-        console.log(Crypto.util.bytesToHex(addr.hash));
-        console.log(addr.toString());*/
     });
 });
