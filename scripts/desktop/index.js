@@ -8,7 +8,7 @@ define([
     "jquery",
     "../walletmanager",
     "../exitnode",
-    "./txview",
+    "desktop/transaction-view",
     "../bindings",
     "../colorman",
     "../p2ptrade/gui",
@@ -76,7 +76,7 @@ define([
         var colorMan = new ColorMan(exitNode);
         var colordefServers = cfg.get('colordefServers');
 
-        txView = new TransactionView($('#main_tx_list'));
+        txView = new TransactionView($('#main_tx_list'), colorMan);
         var pgui = new P2pgui(wm, colorMan, exitNode, cfg);
 		
 		var app = {
@@ -84,7 +84,6 @@ define([
 				return wallet;
 			}
 		}
-
 
         colorSelector = ColorSelector.makeColorSelector(allowedColors);
 
