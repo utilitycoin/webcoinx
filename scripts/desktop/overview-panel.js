@@ -62,27 +62,27 @@ define([
 
 		},
 		showTestnetWalletInfo = function () {
-            $('#testnet_wallet').show();
+      $('#testnet_wallet').show();
 		},
 		hideTestnetWalletInfo = function () {
-            $('#testnet_wallet').hide();
+      $('#testnet_wallet').hide();
 		},
-        setWalletInitInfo = function (text) {
-            $("#wallet_init_status").text(text);
-        },
-        setWalletActiveState = function () {
-            $("#wallet_init_status").text("");
-            $('#wallet_active').show();
-            $('#wallet_init').hide();
-        },
-        setWalletInitState = function () {
-            $("#wallet_init_status").text("");
-            $('#wallet_active').hide();
-            $('#wallet_init').show();
-        },
+    setWalletInitInfo = function (text) {
+      $("#wallet_init_status").text(text);
+    },
+    setWalletActiveState = function () {
+      $("#wallet_init_status").text("");
+      $('#wallet_active').show();
+      $('#wallet_init').hide();
+    },
+    setWalletInitState = function () {
+      $("#wallet_init_status").text("");
+      $('#wallet_active').hide();
+      $('#wallet_init').show();
+    },
 		setBalance = function (value, unit) {
-            $('#wallet_active .balance .value').text(value);
-            $('#wallet_active .balance .unit').text(unit);
+      $('#wallet_active .balance .value').text(value);
+      $('#wallet_active .balance .unit').text(unit);
 		},
 		setAddress = function (text) {
 			$('#addr').val(text);
