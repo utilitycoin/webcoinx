@@ -5,8 +5,8 @@ define([
     "jquery"
 ], function ($) {
     "use strict";
-	var api,
-		initAddress = function () {
+    var api,
+    initAddress = function () {
             // Address copy-to-clipboard
             ZeroClipboard.setMoviePath('scripts/vendor/zeroclipboard/ZeroClipboard.swf');
             var addrClip = new ZeroClipboard.Client();
