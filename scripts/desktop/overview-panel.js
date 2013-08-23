@@ -81,17 +81,17 @@ define([
       $('#wallet_init').show();
     },
 		setBalance = function (value, unit) {
-      $('#wallet_active .balance .value').text(value);
-      $('#wallet_active .balance .unit').text(unit);
+      $('.balance .value').text(value);
+      $('.balance .unit').text(unit);
 		},
 		setAddress = function (text) {
 			$('#addr').val(text);
 		},
 		showUpdatingBalance = function () {
-			$("#updating-balance").show();
+			$(".updating-balance").show();
 		},
 		hideUpdatingBalance = function () {
-			$("#updating-balance").hide();
+			$(".updating-balance").hide();
 		};
 
 	api = {
