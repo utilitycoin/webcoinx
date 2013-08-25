@@ -838,6 +838,11 @@ a:hover {
 	vertical-align: middle;
 }
 
+.block form select {
+  margin-bottom: 0;
+	vertical-align: top;
+}
+
 .block form input.submit.tiny {
 	width: 105px;
 	height: 20px;
