@@ -56,7 +56,6 @@ a:hover {
   padding-left: 0;
 }
 
-
 /* Header */
 
 #header {
@@ -1063,7 +1062,7 @@ a:hover {
 
 .balance {
 	display: inline-block;
-	font-size: 15px;
+	font-size: 11px;
 	vertical-align: bottom;
 	color: #555;
 }
