@@ -75,6 +75,7 @@ define(
 
             $("#p2p_status").text(text);
 
+            self.checkBTCTrade();
 
             function display(bids, asks, offers, button) {
                 var oid,
@@ -138,6 +139,16 @@ define(
             console.log("setCurrentColor: " + colorid + "," + unit);
             this.colorid = colorid;
             this.unit = unit.toString();
+        };
+
+        P2pgui.prototype.checkBTCTrade = function () {
+            if (this.colorid === false) {
+                $('#buy-button').attr('disabled', true);
+                $('#sell-button').attr('disabled', true);
+            } else {
+                $('#buy-button').removeAttr('disabled');
+                $('#sell-button').removeAttr('disabled');
+            }
         };
 
         return P2pgui;
