@@ -5,7 +5,7 @@ Early prototype of color coins client with p2ptrade.
 # Status
 
 It somewhat works, including orderbook but still needs a lot of polish.
-see http://bitcoinx.github.io/webcoinx for live demo (running from this repository)
+see http://utilitycoin.github.io/webcoinx for live demo (running from this repository)
 
 # Development
 
